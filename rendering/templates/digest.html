@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ view.title }}</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.35;
+    color: #000;
+    background: #fff;
+    max-width: 186mm;
+    margin: 0 auto;
+    padding: 8px;
+  }
+  h1 { font-size: 15pt; margin: 0 0 2px; }
+  h2 { font-size: 11pt; margin: 14px 0 4px; page-break-after: avoid; break-after: avoid; }
+  .subtitle { margin: 0 0 8px; }
+  .banner { border: 1px solid #000; padding: 4px 6px; font-weight: bold; margin: 6px 0; }
+  .trust { margin: 6px 0 10px; }
+  .note { font-style: italic; margin: 0 0 4px; }
+  .empty { margin: 0 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; break-inside: avoid; }
+  th, td { border: 1px solid #000; padding: 2px 4px; text-align: left; vertical-align: top; }
+  th { font-weight: bold; }
+  .footer, .limits { font-size: 8pt; margin: 10px 0 0; }
+</style>
+</head>
+<body>
+  <h1>{{ view.title }}</h1>
+  <p class="subtitle">{{ view.subtitle }}</p>
+  {% if view.banner %}<p class="banner">{{ view.banner }}</p>{% endif %}
+  <p class="trust">{{ view.trust_line }}</p>
+
+  {% for table in view.tables %}
+  <h2>{{ table.title }}</h2>
+  {% if table.note %}<p class="note">{{ table.note }}</p>{% endif %}
+  {% if table.rows %}
+  <table>
+    <thead><tr>{% for header in table.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for row in table.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">{{ table.empty_text }}</p>
+  {% endif %}
+  {% endfor %}
+
+  <p class="footer">{{ view.footer }}</p>
+  <p class="limits">{{ view.limits }}</p>
+</body>
+</html>

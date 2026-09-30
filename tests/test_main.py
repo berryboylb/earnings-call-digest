@@ -27,13 +27,19 @@ def test_run_parses_extracts_and_saves_every_transcript(tmp_path, capsys):
     assert "warning: Transcript is short" in out
     assert "[prepared] ok | replayed | figures 8, guidance 3, risks 3, qa_topics 0" in out
     assert "[qa] ok | replayed | figures 0, guidance 1, risks 1, qa_topics 3" in out
-    saved = json.loads((tmp_path / "out" / "sample_northwind_q3fy26.extraction.json").read_text())
+    saved = json.loads((tmp_path / "out" / "sample_northwind_q3fy26" / "extraction.json").read_text())
     assert [section["status"] for section in saved["sections"]] == ["ok", "ok"]
 
     assert out.index("=== 2. extract ===") < out.index("=== 3. verify ===")
     assert "19 items: 18 verified, 1 need review" in out
-    verified = json.loads((tmp_path / "out" / "sample_northwind_q3fy26.verified.json").read_text())
+    verified = json.loads((tmp_path / "out" / "sample_northwind_q3fy26" / "verified.json").read_text())
     assert verified["section_status"] == {"prepared": "ok", "qa": "ok"}
+
+    assert out.index("=== 3. verify ===") < out.index("=== 4. render ===")
+    folder = tmp_path / "out" / "sample_northwind_q3fy26"
+    assert (folder / "digest.html").exists() and (folder / "digest.docx").exists()
+    assert "19 of 19 extracted items verified" not in out  # the fixture has one prior-period item
+    assert "18 of 19 extracted items verified against the transcript" in out
 
 
 def test_run_reports_failure(tmp_path, capsys):
