@@ -22,3 +22,5 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# importlib mode lets test files in different folders share a name (tests/*/test_matching.py).
+addopts = "--import-mode=importlib"

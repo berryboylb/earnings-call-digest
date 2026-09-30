@@ -15,3 +15,6 @@ wheels/
 # LLM response cache and CLI output
 .cache/
 out/
+
+# macOS Finder metadata
+.DS_Store

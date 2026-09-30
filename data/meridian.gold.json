@@ -1,0 +1,193 @@
+{
+  "_comment": "Answer key for data/meridian.txt, labelled from the transcript and checked line by line against it.",
+  "_todo": "Add the 2027 growth number the analyst proposed (and management rejected) to must_not.",
+  "figures": [
+    {
+      "anchor": "Revenue in the second quarter was $850 million",
+      "value": "$850 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "up 12% from the second quarter of 2025",
+      "value": "12%",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "Our platform segment generated $620 million of revenue",
+      "value": "$620 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "services contributed $230 million",
+      "value": "$230 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "For the first six months of 2026, revenue was $1.64 billion",
+      "value": "$1.64 billion",
+      "period": [
+        "first six months of 2026",
+        "first six months 2026",
+        "H1 2026",
+        "YTD 2026",
+        "Jan-Jun 2026"
+      ],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "GAAP operating margin was 18%",
+      "value": "18%",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "GAAP"
+    },
+    {
+      "anchor": "a decline of 200 basis points",
+      "value": "200 basis points",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "GAAP"
+    },
+    {
+      "anchor": "Adjusted operating margin was 23%",
+      "value": "23%",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "non-GAAP"
+    },
+    {
+      "anchor": "GAAP diluted earnings per share were $0.74",
+      "value": "$0.74",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "GAAP"
+    },
+    {
+      "anchor": "adjusted diluted earnings per share were $1.20",
+      "value": "$1.20",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "non-GAAP"
+    },
+    {
+      "anchor": "Operating cash flow was $180 million",
+      "value": "$180 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "Capital expenditure was $45 million",
+      "value": "$45 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "leaving free cash flow of $135 million",
+      "value": "$135 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "we had $1.1 billion in cash and cash equivalents",
+      "value": "$1.1 billion",
+      "period": ["June 30, 2026", "June 30", "Q2 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "$400 million in outstanding debt",
+      "value": "$400 million",
+      "period": ["June 30, 2026", "June 30", "Q2 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "reported local-currency revenue of EUR 92 million",
+      "value": "EUR 92 million",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "The correct platform backlog at June 30 is $460 million",
+      "value": "$460 million",
+      "period": ["June 30, 2026", "June 30", "Q2 2026"],
+      "basis": "not stated"
+    },
+    {
+      "anchor": "Average contract value declined 3% year over year to $97,000",
+      "value": "$97,000",
+      "period": ["Q2 2026", "second quarter 2026"],
+      "basis": "not stated"
+    }
+  ],
+  "guidance": [
+    {
+      "anchor": "We are maintaining our full-year 2026 revenue guidance",
+      "range": "$3.5 billion to $3.7 billion",
+      "period": ["FY 2026", "full-year 2026", "2026"],
+      "direction": "reaffirmed",
+      "qualifier_anchor": null
+    },
+    {
+      "anchor": "We expect Q3 2026 revenue of $900 million to $950 million",
+      "range": "$900 million to $950 million",
+      "period": ["Q3 2026", "third quarter 2026"],
+      "direction": "not stated",
+      "qualifier_anchor": "That range reflects the existing business only"
+    },
+    {
+      "anchor": "a Q3 adjusted operating margin of 22% to 24%",
+      "range": "22% to 24%",
+      "period": ["Q3 2026", "third quarter 2026"],
+      "direction": "not stated",
+      "qualifier_anchor": null
+    },
+    {
+      "anchor": "we expect capital expenditure of $190 million to $210 million",
+      "range": "$190 million to $210 million",
+      "period": ["FY 2026", "full-year 2026", "2026"],
+      "direction": "not stated",
+      "qualifier_anchor": "it excludes acquisitions"
+    }
+  ],
+  "risks": [
+    {
+      "anchor": "several enterprise customers are taking longer to approve purchases",
+      "theme": "Slower customer approvals"
+    },
+    {
+      "anchor": "an extended outage at either supplier could affect service delivery",
+      "theme": "Dependence on two infrastructure suppliers"
+    },
+    {
+      "anchor": "Supply constraints could shift some spending into next year",
+      "theme": "Capex timing risk"
+    },
+    {
+      "anchor": "backlog is not a guarantee of revenue recognition this year",
+      "theme": "Backlog may not convert"
+    },
+    {
+      "anchor": "Hiring and supplier costs could offset some of the improvement",
+      "theme": "Margin pressure from costs"
+    },
+    {
+      "anchor": "we cannot estimate a potential financial impact",
+      "theme": "European privacy regulator inquiry"
+    }
+  ],
+  "must_not": [
+    {
+      "kind": "figure",
+      "value": "$480 million",
+      "reason": "Backlog was corrected to $460 million later in the call"
+    },
+    {
+      "kind": "figure",
+      "value": "$5 billion",
+      "reason": "Long-term aspiration, not a reported result"
+    },
+    {
+      "kind": "guidance",
+      "value": "$5 billion",
+      "reason": "Long-term aspiration, not guidance"
+    }
+  ]
+}

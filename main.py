@@ -1,15 +1,20 @@
-"""Earnings Call Digest: runs every transcript in data/ through parse -> extract -> verify -> render.
+"""Earnings Call Digest: runs every transcript in data/ through parse -> extract -> verify -> render,
+then evaluates the result if there is a hand-written answer key.
 
 Each transcript gets a folder out/<name>/ with extraction.json, verified.json and the
-digest as HTML, PDF and DOCX. Call details (company, ticker, quarter, date, source)
-come from data/<name>.json.
+digest as HTML, PDF and DOCX, plus eval.json and eval.md when data/<name>.gold.json exists.
+Call details (company, ticker, quarter, date, source) come from data/<name>.json.
 """
 
 import sys
 from pathlib import Path
 
 from config import DATA_DIR, OUTPUT_DIR, load_settings
+from constants.evaluation import ANSWER_KEY_SUFFIX
 from constants.rendering import DIGEST_FILES
+from evaluation.gold import AnswerKeyError, load_answer_key
+from evaluation.report import headline_lines, write_reports
+from evaluation.scoring import evaluate
 from extraction.extractor import run_extraction
 from parsing.parser import parse_file
 from providers.base import Provider
@@ -57,6 +62,20 @@ def run(provider: Provider, data_dir: Path = DATA_DIR, output_dir: Path = OUTPUT
         write_docx(view, folder / DIGEST_FILES["docx"])
         print(f"wrote {folder / DIGEST_FILES['docx']}")
         print(view.trust_line, flush=True)
+
+        print("\n=== 5. evaluate ===")
+        answer_key = data_dir / f"{transcript.stem}{ANSWER_KEY_SUFFIX}"
+        if not answer_key.exists():
+            print(f"no answer key for {transcript.stem}, skipping evaluation")
+        else:
+            try:
+                evaluation = evaluate(load_answer_key(answer_key), verification)
+            except AnswerKeyError as error:
+                print(f"evaluation skipped: {error}")
+            else:
+                for path in write_reports(evaluation, folder):
+                    print(f"wrote {path}")
+                print("\n".join(headline_lines(evaluation)), flush=True)
 
         all_ok &= all(section.status != "failed" for section in extraction.sections)
     return all_ok
