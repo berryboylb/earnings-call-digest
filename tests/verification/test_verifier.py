@@ -1,5 +1,5 @@
 from parsing.parser import parse_transcript
-from tests.verification.conftest import guidance, make_run
+from tests.verification.conftest import figure, guidance, make_run
 from verification.verifier import verify_run
 
 ANALYST_EXCHANGE = """\
@@ -47,3 +47,17 @@ def test_recall_lists_management_numbers_no_item_covers(planted):
     assert ("S4", "$61.4 million") in missed  # free cash flow: no item in the planted extraction
     assert all(raw != "$9 million" for _, raw in missed)  # inside the FX risk's quote, so covered
     assert all(raw != "30%" for _, raw in missed)  # said by an analyst, not management
+
+
+def test_model_comparison_flag_is_a_note_and_the_transcript_decides(northwind):
+    current = figure("Revenue", "$412.6 million", "Q3 fiscal 2026", "Priya Raman",
+                     "Third quarter revenue was $412.6 million, compared to $371.2 million in the third quarter of last year.",
+                     is_comparison=True)
+    prior = figure("Prior-year revenue", "$371.2 million", "Q3 fiscal 2025", "Priya Raman",
+                   "Third quarter revenue was $412.6 million, compared to $371.2 million in the third quarter of last year.",
+                   is_comparison=True)
+    items = verify_run(northwind, make_run(prepared={"figures": [current, prior]})).items
+
+    assert items[0].status == "verified"  # the transcript presents $412.6M as the current result
+    assert any("marked this figure as a prior-period comparison" in note for note in items[0].notes)
+    assert items[1].reasons == ["$371.2 million is a prior-period comparison in the transcript, not a current result"]

@@ -111,8 +111,11 @@ def check_prior_period(item: VerifiedItem, index: TranscriptIndex) -> None:
 
 
 def check_is_comparison(item: VerifiedItem) -> None:
+    """A note, not a reason: models set is_comparison on current figures whose sentence also
+    mentions last year. Real prior-period figures are caught by check_prior_period instead,
+    from the transcript's own wording."""
     if item.fields["is_comparison"]:
-        item.reasons.append("the model marked this figure as a prior-period comparison")
+        item.notes.append("the model marked this figure as a prior-period comparison; the transcript's wording was checked instead")
 
 
 def check_direction(item: VerifiedItem, index: TranscriptIndex) -> None:
