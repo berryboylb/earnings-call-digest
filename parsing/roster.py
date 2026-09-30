@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 from .models import Participant, Role
-from .names import name_key, split_name_title
-from .patterns import ANALYST_HEADER, MANAGEMENT_HEADER, OPERATOR_LINE
+from .names import looks_like_title, name_key, split_name_title
+from .patterns import (
+    ANALYST_HEADER,
+    MANAGEMENT_HEADER,
+    MIN_UNRECOGNISED_ROSTER_ENTRIES,
+    OPERATOR_LINE,
+)
 
 
 def parse_roster(lines: list[str]) -> tuple[list[Participant], int]:
@@ -42,3 +47,37 @@ def parse_roster(lines: list[str]) -> tuple[list[Participant], int]:
         last = i
     return participants, last + 1
 
+
+def find_unrecognised_roster(lines: list[str]) -> tuple[list[str], int]:
+    """Look for what seems to be a participant list under a header we don't recognise.
+
+    Before the first Operator line, a run of "Name - Title" lines (blank lines allowed)
+    under some other header looks like a participant list. We don't know which role
+    its header means, so no roles are taken from it; it only produces a warning.
+    Turn detection still starts after it, so its lines don't become speaker turns.
+    Returns (warnings, index of the first line after the last such block, or 0).
+    """
+    blocks: list[tuple[str, int, int]] = []  # (header, entry count, index after last entry)
+    header, count, end = "", 0, 0
+    for i, raw in enumerate(lines):
+        line = raw.strip()
+        if OPERATOR_LINE.fullmatch(line):
+            break
+        if not line:
+            continue
+        entry = split_name_title(line)
+        if entry and looks_like_title(entry[1]):
+            count, end = count + 1, i + 1
+            continue
+        if count:
+            blocks.append((header, count, end))
+        header, count = line, 0
+    if count:
+        blocks.append((header, count, end))
+
+    lists = [(h, e) for h, n, e in blocks if n >= MIN_UNRECOGNISED_ROSTER_ENTRIES]
+    warnings = [
+        f"Possible participant list under unrecognised header '{h}'; roles not assigned from it"
+        for h, _ in lists
+    ]
+    return warnings, max((e for _, e in lists), default=0)

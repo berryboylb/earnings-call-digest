@@ -30,7 +30,7 @@ def assign_roles(turns: list[Turn], sections: list[Section], roster: dict) -> di
         elif name_key(s) in roster:
             roles[s] = roster[name_key(s)].role
         elif UNIDENTIFIED.fullmatch(s):
-            roles[s] = "analyst" if "analyst" in s.lower() else "unknown"
+            roles[s] = "unknown"  # checked before the heuristics so it's never guessed
         elif roster:
             roles[s] = "unknown"  # a participant list exists, so roles come only from it
         elif _introduced_as_questioner(s, turns, sections):

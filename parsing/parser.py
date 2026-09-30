@@ -15,7 +15,7 @@ from .names import name_key
 from .paragraphs import split_paragraphs
 from .patterns import NBSP_CHARS
 from .roles import assign_roles
-from .roster import parse_roster
+from .roster import find_unrecognised_roster, parse_roster
 from .sections import find_qa_start
 from .turns import Turn, split_turns
 
@@ -56,8 +56,13 @@ def parse_transcript(text: str) -> ParsedTranscript:
 
     participants, body_start = parse_roster(lines)
     roster = {name_key(p.name): p for p in participants}
+    warnings: list[str] = []
+    if not participants:
+        warnings, unrecognised_end = find_unrecognised_roster(lines)
+        body_start = max(body_start, unrecognised_end)
 
-    turns, warnings = split_turns(lines[body_start:], roster, first_line_no=body_start + 1)
+    turns, turn_warnings = split_turns(lines[body_start:], roster, first_line_no=body_start + 1)
+    warnings += turn_warnings
     turns, paragraphs = _drop_empty_turns(turns, warnings)
 
     sections = _label_sections(turns, warnings)

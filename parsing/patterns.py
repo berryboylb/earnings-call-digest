@@ -22,6 +22,10 @@ MIN_LABEL_OCCURRENCES = 2
 # The word an Operator uses when handing the line to an analyst ("next question comes from").
 QA_HANDOFF_WORD = "question"
 
+# How many "Name - Title" lines in a row, under a header we don't recognise, look like
+# a participant list rather than a stray line.
+MIN_UNRECOGNISED_ROSTER_ENTRIES = 2
+
 # Participant-list headers (matched against the whole line, minus a trailing colon).
 MANAGEMENT_HEADER = re.compile(r"(?:company|corporate)\s+participants|executives", re.I)
 ANALYST_HEADER = re.compile(r"(?:conference\s+call|other)\s+participants|analysts", re.I)

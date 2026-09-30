@@ -33,3 +33,11 @@ def test_layout_b_without_participant_list_infers_roles(layout_b):
     assert any("No participant list" in w for w in result.warnings)
     assert any("Mark Stone" in w for w in result.warnings)
 
+
+def test_unidentified_analyst_is_unknown_with_warning(kestrel_text):
+    text = kestrel_text.replace("Claire Dubois\n\nCan you", "Unidentified Analyst\n\nCan you")
+    result = parse_transcript(text)
+    roles = {s.speaker: s.role for s in result.segments}
+    assert roles["Unidentified Analyst"] == "unknown"
+    assert result.unknown_speakers == ["Unidentified Analyst"]
+    assert "Could not determine role for: Unidentified Analyst" in result.warnings
