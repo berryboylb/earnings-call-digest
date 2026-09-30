@@ -26,7 +26,10 @@ def main(argv: list[str] | None = None) -> int:
     print(f"roster_source: {result.roster_source}")
     width = max(len(s.speaker) for s in result.segments)
     for s in result.segments:
-        markers = "".join("B" if p.boilerplate else "." for p in s.paragraphs)
+        # "." no boilerplate, "B" all boilerplate, "b" partly boilerplate
+        markers = "".join(
+            "B" if p.boilerplate else "b" if p.boilerplate_spans else "." for p in s.paragraphs
+        )
         print(f"{s.id:<4} {s.speaker:<{width}}  {s.role:<10}  {s.section:<8}  {markers}")
     print(f"warnings ({len(result.warnings)}):")
     for w in result.warnings:

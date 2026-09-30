@@ -7,6 +7,7 @@ import pytest
 from parsing import parse_file
 
 KESTREL = Path(__file__).parents[1] / "fixtures" / "fictional_kestrel_q2.txt"
+MERIDIAN = Path(__file__).parents[2] / "data" / "meridian.txt"
 
 # Fictional Layout B transcript: inline "Name: text" and no participant list.
 LAYOUT_B = """\
@@ -50,3 +51,8 @@ def by_speaker():
     def _by_speaker(result, name):
         return [s for s in result.segments if s.speaker == name]
     return _by_speaker
+
+
+@pytest.fixture(scope="session")
+def meridian():
+    return parse_file(MERIDIAN)

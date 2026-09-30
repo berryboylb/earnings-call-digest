@@ -89,3 +89,15 @@ BOILERPLATE_PATTERNS = [
 
 # The end of a sentence: . ! ? or …, optionally followed by closing quotes or brackets.
 SENTENCE_END = re.compile(r"[.!?…][\"'’”)\]]*$")
+
+# A break between sentences: . ! ? (plus any closing quotes/brackets), whitespace, then an
+# uppercase letter or opening quote. "$4.2 million", "3.5%" (no space after the dot) and
+# "U.S. dollars" (lowercase after the space) are not breaks. The gap group is the whitespace.
+SENTENCE_BREAK = re.compile(r"[.!?][\"'’”)\]]*(?P<gap>\s+)(?=[A-Z\"'“‘])")
+
+# A line marking the end of the transcript, e.g. "END OF TRANSCRIPT", "[END]", "-- End --".
+# Optional brackets, dashes or asterisks around "end" or "end of (the) transcript/call/document".
+END_MARKER = re.compile(
+    r"[\[(*\s\-–—]*end(?:\s+of\s+(?:the\s+)?(?:transcript|call|document))?[\])*\s\-–—]*",
+    re.I,
+)

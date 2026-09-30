@@ -1,0 +1,127 @@
+SYNTHETIC TEST FIXTURE - NOT A REAL COMPANY OR EARNINGS CALL
+
+Meridian Cloud Systems plc
+Q2 2026 Earnings Conference Call
+August 6, 2026 | 09:00 UTC
+Reporting period: Three months ended June 30, 2026
+Reporting currency: USD unless explicitly stated otherwise
+Source: Fictional transcript created for parser and extraction testing.
+
+CORPORATE PARTICIPANTS
+Emma Chen - Head of Investor Relations
+Daniel Okafor - Chief Executive Officer
+Priya Shah - Chief Financial Officer
+
+CONFERENCE CALL PARTICIPANTS
+Alex Morgan - Northbridge Securities, Analyst
+Sofia Reyes - Harbor Research, Analyst
+Michael Lee - Summit Capital, Analyst
+
+PREPARED REMARKS
+
+Operator
+Good morning, and welcome to Meridian Cloud Systems' second-quarter 2026 earnings call. All participants are in listen-only mode. Following the prepared remarks, we will open the call for questions. This call is being recorded. Emma, please go ahead.
+
+Emma Chen - Head of Investor Relations
+Thank you. Joining me are Daniel Okafor, our CEO, and Priya Shah, our CFO. Today's discussion contains forward-looking statements that are subject to risks and uncertainties. Actual results may differ materially. We will discuss GAAP and non-GAAP measures; reconciliations accompany our fictional earnings release. All dollar figures are US dollars unless we explicitly say otherwise.
+
+Daniel Okafor - Chief Executive Officer
+Revenue in the second quarter was $850 million, up 12% from the second quarter of 2025. We saw solid demand for our cloud platform, although several enterprise customers are taking longer to approve purchases.
+
+Our platform segment generated $620 million of revenue, while services contributed $230 million. Customer retention remained healthy, but we are not providing a numerical retention rate today.
+
+We aim to reach $5 billion in annual revenue over the longer term. That is an aspiration, not guidance for 2027 or any particular year. We are investing in distribution and product reliability to support that ambition.
+
+Priya Shah - Chief Financial Officer
+Second-quarter revenue was $850 million, compared with $758.9 million in the prior-year quarter. The 12% growth Daniel mentioned is rounded. For the first six months of 2026, revenue was $1.64 billion; that is a year-to-date figure, not the second-quarter result.
+
+GAAP operating margin was 18%, compared with 20% in Q2 2025, a decline of 200 basis points. Adjusted operating margin was 23%, compared with 24% a year ago. GAAP diluted earnings per share were $0.74, while adjusted diluted earnings per share were $1.20. These are separate measures.
+
+Operating cash flow was $180 million. Capital expenditure was $45 million, leaving free cash flow of $135 million under our definition of operating cash flow less capital expenditure.
+
+At June 30, we had $1.1 billion in cash and cash equivalents and $400 million in outstanding debt. Those are balance-sheet figures as of the quarter end, not cash flows during the quarter.
+
+Our European subsidiary reported local-currency revenue of EUR 92 million. That amount is already included in consolidated revenue after translation; it should not be added to the $850 million total.
+
+We are maintaining our full-year 2026 revenue guidance of $3.5 billion to $3.7 billion. This assumes broadly stable demand and no material deterioration in foreign-exchange rates. We expect Q3 2026 revenue of $900 million to $950 million and a Q3 adjusted operating margin of 22% to 24%. We are not providing Q3 GAAP EPS guidance.
+
+For the full year, we expect capital expenditure of $190 million to $210 million. Supply constraints could shift some spending into next year without changing the total cost of the projects.
+
+Daniel Okafor - Chief Executive Officer
+Our most immediate uncertainty is the timing of larger customer decisions. We also depend on two infrastructure suppliers; an extended outage at either supplier could affect service delivery. We have not experienced a material outage this quarter. We plan to expand supplier redundancy during the second half of 2026.
+
+QUESTIONS AND ANSWERS
+
+Operator:
+We will now begin the question-and-answer session. Our first question comes from Alex Morgan of Northbridge Securities.
+
+Alex Morgan -- Northbridge Securities -- Analyst
+You mentioned the longer-term $5 billion ambition. Should we model 20% revenue growth in 2027 to get there?
+
+Daniel Okafor -- Chief Executive Officer
+No. We are not endorsing that growth assumption, and we are not issuing 2027 guidance. The ambition does not specify a completion date.
+
+Alex Morgan -- Northbridge Securities -- Analyst
+On the $3.5 billion to $3.7 billion range, are you raising the midpoint today?
+
+Priya Shah -- Chief Financial Officer
+No, we are maintaining the range. We have not raised or lowered it on this call.
+
+Operator
+Our next question comes from Sofia Reyes at Harbor Research.
+
+Sofia Reyes - Harbor Research - Analyst
+You discussed $190 million to $210 million in spending. Is that for the next quarter?
+
+Priya Shah - Chief Financial Officer
+No, that is our full-year 2026 capital expenditure range. It is not quarterly guidance, and it excludes acquisitions.
+
+Sofia Reyes - Harbor Research - Analyst
+Can you give us the platform backlog and explain whether it translates directly into revenue this year?
+
+Priya Shah - Chief Financial Officer
+Platform backlog at June 30 was $480 million. Some contracts can be delayed or cancelled, so backlog is not a guarantee of revenue recognition this year.
+
+Daniel Okafor - Chief Executive Officer
+Priya, I believe the final finance schedule showed a different backlog amount. Could you clarify that before we move on?
+
+Priya Shah - Chief Financial Officer
+Yes, thank you. I misspoke. The correct platform backlog at June 30 is $460 million, not $480 million. Please use $460 million. The qualification about delays and cancellations still applies.
+
+Operator:
+Our next question comes from Michael Lee of Summit Capital.
+
+Michael Lee, Summit Capital - Analyst
+Could the margin decline mean profitability will continue to fall through the remainder of the year?
+
+Daniel Okafor, Chief Executive Officer
+We would not draw that conclusion from this quarter alone. We expect efficiency improvements to help, but it is too early to quantify the full-year margin benefit. Hiring and supplier costs could offset some of the improvement.
+
+Michael Lee, Summit Capital - Analyst
+What was the movement in average contract value?
+
+Priya Shah, Chief Financial Officer
+Average contract value declined 3% year over year to $97,000. The contract value itself remains positive; the decline is the year-over-year change. The mix of smaller customers drove most of that movement.
+
+Michael Lee, Summit Capital - Analyst
+Are you seeing litigation or regulatory changes that would alter the outlook?
+
+Daniel Okafor, Chief Executive Officer
+We have received an inquiry from a European privacy regulator. No finding has been issued, and we cannot estimate a potential financial impact at this stage. We are cooperating with the inquiry. We have not included a specific penalty assumption in our guidance.
+
+Emma Chen - Head of Investor Relations
+We have time for one final follow-up from Alex.
+
+Alex Morgan - Northbridge Securities - Analyst
+To confirm, does the expected Q3 revenue range include the acquisition you announced last week?
+
+Priya Shah - Chief Financial Officer
+No. That range reflects the existing business only. The proposed acquisition has not closed and remains subject to regulatory approval. We have not provided an estimate of the acquired business's contribution.
+
+Daniel Okafor - Chief Executive Officer
+Thank you for your questions. We will focus on customer implementation times and supplier redundancy over the next two quarters. We expect to discuss our third-quarter results in November.
+
+Operator
+This concludes today's conference call. You may disconnect. Thank you for participating.
+
+END OF TRANSCRIPT

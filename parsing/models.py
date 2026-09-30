@@ -23,7 +23,13 @@ class Participant:
 @dataclass
 class Paragraph:
     text: str
-    boilerplate: bool = False
+    # (start, end) character offsets into `text` of safe-harbor boilerplate.
+    boilerplate_spans: list[tuple[int, int]] = field(default_factory=list)
+
+    @property
+    def boilerplate(self) -> bool:
+        """True only if boilerplate covers the whole paragraph."""
+        return any(s == 0 and e == len(self.text) for s, e in self.boilerplate_spans)
 
 
 @dataclass

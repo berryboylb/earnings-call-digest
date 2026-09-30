@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 from .names import contains, looks_like_name, looks_like_title, name_key, split_name_title
 from .patterns import (
+    END_MARKER,
     INLINE_SPEAKER,
     MIN_LABEL_OCCURRENCES,
     OPERATOR,
@@ -93,7 +94,12 @@ def _looks_like_label(line: str) -> bool:
 
 
 def split_turns(lines: list[str], roster: dict, first_line_no: int) -> tuple[list[Turn], list[str]]:
-    """Split body lines into turns. `first_line_no` is the file line number of lines[0], used in warnings."""
+    """Split body lines into turns. `first_line_no` is the file line number of lines[0], used in warnings.
+
+    Everything from an end marker line ("END OF TRANSCRIPT") on is ignored.
+    """
+    end = next((i for i, raw in enumerate(lines) if END_MARKER.fullmatch(raw.strip())), len(lines))
+    lines = lines[:end]
     counts = _count_labels(lines)
     canonical: dict[tuple[str, ...], str] = {}  # first spelling seen for each speaker
     turns: list[Turn] = []
