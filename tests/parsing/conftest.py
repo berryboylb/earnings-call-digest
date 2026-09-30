@@ -7,7 +7,7 @@ import pytest
 from parsing.parser import parse_file
 
 KESTREL = Path(__file__).parents[1] / "fixtures" / "fictional_kestrel_q2.txt"
-MERIDIAN = Path(__file__).parents[2] / "data" / "meridian.txt"
+MERIDIAN = Path(__file__).parents[2] / "tests" / "fixtures" / "meridian.txt"
 
 # Fictional Layout B transcript: inline "Name: text" and no participant list.
 LAYOUT_B = """\

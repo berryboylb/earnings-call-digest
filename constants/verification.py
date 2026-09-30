@@ -37,6 +37,35 @@ DIRECTION_CUES = {
     "initiated": ["initiate", "initiating", "initiated", "introduce", "introducing", "introduced"],
 }
 
+# Outlook headings: the CFO usually announces which period the guidance that follows is for.
+# "Let me start with some full year commentary for FY27." / "Now, to the outlook for our
+# first quarter". A guidance item's period must agree with the nearest heading above it in
+# the same speaker's turn. Only phrases that name a period count, so "Turning to our outlook."
+# or "before I move to outlook" are not headings.
+QUARTER_HEADING = re.compile(
+    r"\b(?:outlook|commentary|guidance)\s+for\s+(?:our\s+|the\s+)?(?:first|second|third|fourth|next)\s+quarter\b"
+    r"|\b(?:outlook|commentary|guidance)\s+for\s+Q[1-4]\b",
+    re.I,
+)
+FULL_YEAR_HEADING = re.compile(
+    r"\b(?:full[\s-]year|fiscal[\s-]year|annual)\s+(?:outlook|commentary|guidance)\b"
+    r"|\b(?:outlook|commentary|guidance)\s+for\s+(?:the\s+)?(?:full[\s-]year|fiscal\s+year|FY\s?\d{2,4})\b",
+    re.I,
+)
+# How a guidance item's period says which kind of period it is.
+QUARTER_PERIOD = re.compile(r"\bQ[1-4]\b|\b(?:first|second|third|fourth|next)\s+quarter\b|\bquarter\b", re.I)
+FULL_YEAR_PERIOD = re.compile(
+    r"\bFY\s?'?\d{2,4}\b|\bfull[\s-]year\b|\bfiscal\s+(?:year\s+)?\d{2,4}\b|\bannual\b|^\s*(?:19|20)\d{2}\s*$",
+    re.I,
+)
+
+# Forward-looking words that are not hedging on their own: "we expect revenue of X" is
+# guidance, not a risk. A risk whose hedging phrase is only one of these is rejected.
+NEUTRAL_FORWARD_WORDS = {
+    "expect", "expected", "expects", "should", "will", "believe", "anticipate", "plan",
+    "intend", "i think", "we think", "going forward",
+}
+
 # --- Output ----------------------------------------------------------------------------
 
 # Characters of text shown either side of a possibly missed number.

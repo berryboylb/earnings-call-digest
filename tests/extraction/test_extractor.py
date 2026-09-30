@@ -6,7 +6,7 @@ from providers.base import LlmError
 from schema.extraction import Extraction, Usage
 from schema.transcript import Paragraph, ParsedTranscript, Segment
 
-DATA = Path(__file__).parents[2] / "data"
+DATA = Path(__file__).parents[2] / "tests" / "fixtures"
 
 
 class FakeProvider:

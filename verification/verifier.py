@@ -11,6 +11,7 @@ from verification.checks import (
     check_boilerplate,
     check_context,
     check_direction,
+    check_guidance_period,
     check_hedging_phrase,
     check_is_comparison,
     check_prior_period,
@@ -40,9 +41,9 @@ def verify_run(parsed: ParsedTranscript, run: ExtractionRun) -> VerificationResu
 
     items = merge_duplicates(items)
     assign_ids(items)
-    possibly_missed = find_possibly_missed(index, items)
-
     section_status = {section.name: section.status for section in run.sections}
+    possibly_missed = find_possibly_missed(index, items, section_status)
+
     return VerificationResult(items=items, possibly_missed=possibly_missed, section_status=section_status)
 
 
@@ -63,6 +64,7 @@ def verify_item(kind: ItemKind, extracted: BaseModel, origin: str, index: Transc
             check_context(item, index)
             check_values(item, index)
             check_direction(item, index)
+            check_guidance_period(item, index)
         if kind == "risk":
             check_hedging_phrase(item, index)
         if kind == "qa":

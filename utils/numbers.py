@@ -5,6 +5,7 @@ import re
 from constants.numbers import (
     ABSOLUTE_TOLERANCE,
     AMOUNT,
+    CENT_WORDS,
     CURRENCY_CODES,
     DIRECTION_BEFORE_NUMBER,
     DIRECTION_WINDOW,
@@ -64,7 +65,11 @@ def _read_amount(match: re.Match, text: str) -> Amount:
         unit_word = ""
         end = match.end("number")
 
-    if currency:
+    if unit_word in CENT_WORDS:
+        unit = "currency"
+        currency = currency or "USD"
+        number = number / 100
+    elif currency:
         unit = "currency"
     elif unit_word:
         unit = UNITS[unit_word]

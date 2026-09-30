@@ -8,7 +8,7 @@ from extraction.messages import build_user_message
 from parsing.parser import parse_file
 from schema.transcript import Paragraph, Segment
 
-NORTHWIND = Path(__file__).parents[2] / "data" / "sample_northwind_q3fy26.txt"
+NORTHWIND = Path(__file__).parents[2] / "tests" / "fixtures" / "sample_northwind_q3fy26.txt"
 
 
 @pytest.fixture(scope="module")

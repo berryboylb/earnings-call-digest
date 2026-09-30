@@ -1,0 +1,95 @@
+Northwind Robotics, Inc. (NWRB)
+Q3 Fiscal 2026 Earnings Conference Call
+October 22, 2026
+
+NOTE: Fictional transcript written to test this pipeline. The company, people and figures are invented.
+
+Company Participants
+
+Dana Whitfield - Vice President, Investor Relations
+Marcus Oyelaran - Chief Executive Officer
+Priya Raman - Chief Financial Officer
+
+Conference Call Participants
+
+Ethan Brooks - Morgan Stanley
+Lena Kovacs - Goldman Sachs
+Samuel Adeyemi - JPMorgan
+
+Operator
+
+Good afternoon, and welcome to the Northwind Robotics third quarter fiscal 2026 earnings conference call. At this time, all participants are in a listen-only mode. I would now like to turn the call over to Dana Whitfield, Vice President of Investor Relations.
+
+Dana Whitfield
+
+Thank you, operator, and good afternoon everyone. Joining me today are Marcus Oyelaran, our Chief Executive Officer, and Priya Raman, our Chief Financial Officer.
+
+Before we begin, please note that today's discussion contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. These statements are subject to risks and uncertainties, and actual results could differ materially from those expressed or implied. Please refer to our most recent Form 10-K for a discussion of these risks. We will also discuss certain non-GAAP financial measures; reconciliations are available in our earnings release.
+
+With that, I'll turn the call over to Marcus.
+
+Marcus Oyelaran
+
+Thanks, Dana, and good afternoon. We delivered a strong third quarter. Revenue reached $412.6 million, up 11% year over year, driven by record shipments of our warehouse automation systems.
+
+Our services business continued to grow, with services revenue up 12% year over year as our installed base expanded. We added 38 new enterprise customers in the quarter, bringing our total to 1,140.
+
+That said, the environment is not without challenges. We are seeing softness in order timing from some European customers, and we remain cautious about the pace of capital spending in that region over the next two quarters.
+
+Given the strength we're seeing in North America, we are raising our full-year revenue outlook. I'll let Priya walk through the details.
+
+Priya Raman
+
+Thank you, Marcus. Third quarter revenue was $412.6 million, compared to $371.2 million in the third quarter of last year. GAAP gross margin was 41.3%, up 120 basis points from a year ago, reflecting better mix and lower component costs.
+
+GAAP operating income was $52.8 million, and non-GAAP operating margin was 16.1%. Non-GAAP earnings per share were $0.58, compared to $0.49 in the prior-year quarter. Free cash flow for the quarter was $61.4 million.
+
+Foreign exchange was a meaningful headwind this quarter, reducing reported revenue by approximately $9 million. We also continue to monitor tariff developments, which could pressure component costs in the fourth quarter.
+
+Turning to our outlook. For fiscal 2026, we now expect revenue in the range of $1.60 billion to $1.64 billion, up from our prior range of $1.55 billion to $1.60 billion. We are reaffirming our full-year non-GAAP earnings per share guidance of $2.10 to $2.20. For the fourth quarter, we expect revenue between $425 million and $440 million.
+
+With that, operator, we're ready to take questions.
+
+Operator
+
+Thank you. We will now begin the question-and-answer session. Our first question comes from Ethan Brooks with Morgan Stanley.
+
+Ethan Brooks
+
+Thanks for taking my question. Orders grew about 30% last quarter by my math. Can you talk about whether that pace held in Q3, and what you're seeing in Europe specifically?
+
+Marcus Oyelaran
+
+Sure, Ethan. We don't break out quarterly orders, but I'd say demand in North America remains robust. In Europe, it's really a timing question. Customers are still committed to their projects, but some are pushing decisions out by a quarter or two. It's hard to be precise about when that turns.
+
+Operator
+
+Our next question comes from Lena Kovacs with Goldman Sachs.
+
+Lena Kovacs
+
+Hi, thanks. The gross margin expansion was impressive. How sustainable is 41% given the tariff risk you mentioned?
+
+Priya Raman
+
+Thanks, Lena. We expect gross margin to remain in the 40% to 42% range in the fourth quarter. If the proposed tariffs take effect, we estimate an impact of roughly 50 basis points, which we believe we can partially offset through pricing.
+
+Operator
+
+Our next question comes from Samuel Adeyemi with JPMorgan.
+
+Samuel Adeyemi
+
+Thanks. Can you give us any color on capital expenditures for next year?
+
+Priya Raman
+
+We're not providing fiscal 2027 guidance today, but we expect capital expenditures to remain at a similar level as a percentage of revenue. We'll share more detail on our fourth quarter call.
+
+Operator
+
+That concludes today's question-and-answer session. I'll turn the call back to Marcus for closing remarks.
+
+Marcus Oyelaran
+
+Thank you all for joining us. We're proud of the quarter and confident in our position heading into the fourth quarter. We look forward to speaking with you again.

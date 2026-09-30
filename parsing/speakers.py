@@ -30,6 +30,7 @@ class Turn:
     speaker: str
     after_qa_header: bool  # True if an explicit "Q&A" header came before this turn
     lines: list[str] = field(default_factory=list)
+    line_no: int = 0  # the file line number of the turn's speaker label
 
 
 # --- Splitting into turns ---------------------------------------------------------
@@ -64,7 +65,7 @@ def split_turns(
             speaker, text_on_same_line = speaker_line
             speaker = first_spelling.setdefault(name_key(speaker), speaker)
             first_lines = [text_on_same_line] if text_on_same_line else []
-            turns.append(Turn(speaker, qa_header_seen, first_lines))
+            turns.append(Turn(speaker, qa_header_seen, first_lines, line_no))
         elif current_turn is not None:
             if line and _looks_like_speaker_line(line):
                 warnings.append(
@@ -91,18 +92,22 @@ def _read_speaker_line(
     if operator:
         return OPERATOR, (operator["text"] or "").strip()
 
+    if _lists_speakers(line, label_counts):
+        return None  # a header line naming the people on the call, not a speaker label
+
     # The name on a line of its own: "Jane Doe", "Jane Doe:" or "Jane Doe - CFO".
     for name in _names_on_speaker_line(line):
         speaker = _confirmed_speaker(name, roster, label_counts, current_turn)
         if speaker:
             return speaker, ""
 
-    # The name and text on one line: "Jane Doe: Revenue was..."
+    # The name and text on one line: "Jane Doe: Revenue was..." or "JANE DOE, Citi: Thanks..."
     inline = INLINE_SPEAKER.fullmatch(line)
     if inline:
-        speaker = _confirmed_speaker(inline["name"], roster, label_counts, current_turn)
-        if speaker:
-            return speaker, inline["text"].strip()
+        for name in _names_in_label(inline["name"]):
+            speaker = _confirmed_speaker(name, roster, label_counts, current_turn)
+            if speaker:
+                return speaker, inline["text"].strip()
 
     return None
 
@@ -136,22 +141,48 @@ def _confirmed_speaker(
     return None
 
 
+def _lists_speakers(line: str, label_counts: Counter) -> bool:
+    """True for a line like "Jane Doe, John Roe" (or "Jonathan Neilson, Satya Nadella, Amy Hood"):
+    two or more names, each of which is used as a speaker label somewhere in the transcript."""
+    parts = [part.strip() for part in line.removesuffix(":").split(",")]
+    if len(parts) < 2:
+        return False
+    for part in parts:
+        if not looks_like_name(part) or label_counts[name_key(part)] < 1:
+            return False
+    return True
+
+
 def _names_on_speaker_line(line: str) -> list[str]:
     """Possible names on a line that is only a speaker label: the whole line
     ("Jane Doe", "Jane Doe:"), plus the name in "Jane Doe - Chief Financial Officer"."""
-    names = [line.removesuffix(":").strip()]
-    name_and_title = split_name_title(line)
+    label = line.removesuffix(":").strip()
+    names = [label]
+    name_and_title = split_name_title(label)
+    # A colon inside the "title" means text follows the label ("JANE DOE, Citi: Thanks..."),
+    # so this isn't a label-only line; the inline check reads it instead, keeping the text.
+    if name_and_title and looks_like_title(name_and_title[1]) and ":" not in name_and_title[1]:
+        names.append(name_and_title[0])
+    return names
+
+
+def _names_in_label(label: str) -> list[str]:
+    """Possible names in the label before a colon: the whole label ("Jane Doe"),
+    plus the name in "Jane Doe, Citi" or "Jane Doe - Chief Financial Officer"."""
+    names = [label]
+    name_and_title = split_name_title(label)
     if name_and_title and looks_like_title(name_and_title[1]):
         names.append(name_and_title[0])
     return names
 
 
 def _all_possible_names(line: str) -> list[str]:
-    """Every possible speaker name on a line, including "Jane Doe" in "Jane Doe: text"."""
+    """Every possible speaker name on a line, including "Jane Doe" in "Jane Doe: text"
+    and "JANE DOE, Citi: text"."""
     names = _names_on_speaker_line(line)
     inline = INLINE_SPEAKER.fullmatch(line)
     if inline:
-        names.append(inline["name"])
+        names += _names_in_label(inline["name"])
     return names
 
 

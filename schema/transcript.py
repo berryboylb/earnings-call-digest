@@ -46,3 +46,6 @@ class ParsedTranscript:
     roster_source: Literal["participant_list", "heuristic"]
     unknown_speakers: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    header: list[str] = field(default_factory=list)  # the lines before the call starts
+    call_title: str | None = None  # read from the header, e.g. "Q2 2026 Earnings Conference Call"
+    call_date: str | None = None  # read from the header, e.g. "August 6, 2026"

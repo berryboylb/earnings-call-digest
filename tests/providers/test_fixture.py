@@ -11,7 +11,7 @@ from schema.extraction import Extraction
 
 ROOT = Path(__file__).parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "northwind.extraction.json"
-NORTHWIND = ROOT / "data" / "sample_northwind_q3fy26.txt"
+NORTHWIND = ROOT / "tests" / "fixtures" / "sample_northwind_q3fy26.txt"
 
 
 def test_hand_written_fixture_round_trips():

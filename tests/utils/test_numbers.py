@@ -47,3 +47,15 @@ def test_units_must_match():
     assert amounts_equal(one("1.2 percentage points"), one("120 bps"))
     assert not amounts_equal(one("12%"), one("$12"))
     assert not amounts_equal(one("EUR 92 million"), one("$92 million"))
+
+
+def test_scale_carries_back_across_and():
+    low, high = parse_amounts("revenue between $89.85 and $90.95 billion")
+    assert (low.value, high.value) == (89.85e9, 90.95e9)
+    low, high = parse_amounts("between $425 million and $440 million")  # both scaled: unchanged
+    assert (low.value, high.value) == (425e6, 440e6)
+
+
+def test_cents_are_read_as_dollars():
+    assert amounts_equal(one("a benefit of 27 cents on diluted earnings per share"), one("$0.27"))
+    assert not amounts_equal(one("27 cents"), one("$27"))

@@ -15,8 +15,8 @@ from schema.verification import (
 GENERATED_AT = datetime(2026, 9, 30, 12, 0, tzinfo=timezone.utc)
 
 META = DigestMeta(
-    company="Meridian", ticker="", quarter="Q2 2026", call_date="August 6, 2026",
-    source="fictional test transcript", model="test/model", prompt_version="v1",
+    call_title="Meridian Cloud Systems plc · Q2 2026 Earnings Conference Call",
+    call_date="August 6, 2026", source="meridian.txt", model="test/model", prompt_version="v1",
     structured_output_mode="json_schema", replayed=True, transcript_sha256="abc123def456",
 )
 

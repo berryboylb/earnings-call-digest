@@ -6,8 +6,9 @@ When the parser isn't sure about something, it adds a warning or raises ParseErr
 
 from pathlib import Path
 
-from parsing.paragraphs import split_paragraphs
-from parsing.roster import find_unrecognised_roster, parse_roster
+from parsing.header import header_lines, read_call_date, read_call_title
+from parsing.paragraphs import split_paragraphs, uses_blank_lines
+from parsing.roster import find_roster_start, find_unrecognised_roster, parse_roster
 from parsing.sections import find_qa_start
 from parsing.speakers import Turn, assign_roles, split_turns
 from parsing.validation import quality_warnings, validate
@@ -37,7 +38,8 @@ def parse_transcript(text: str) -> ParsedTranscript:
     # 2. Split the rest of the text into speaker turns.
     turns, turn_warnings = split_turns(lines[body_start:], roster, first_line_no=body_start + 1)
     warnings += turn_warnings
-    turns, paragraphs = _drop_empty_turns(turns, warnings)
+    blank_lines_separate = uses_blank_lines(lines[body_start:])
+    turns, paragraphs = _drop_empty_turns(turns, warnings, blank_lines_separate)
 
     # 3. Mark each turn "prepared" or "qa", and decide each speaker's role.
     sections = _label_sections(turns, warnings)
@@ -59,22 +61,34 @@ def parse_transcript(text: str) -> ParsedTranscript:
     unknown_speakers = [speaker for speaker in speakers if roles[speaker] == "unknown"]
     warnings += quality_warnings(segments, unknown_speakers, has_participant_list=bool(participants))
 
+    # 5. The header: the lines before the participant list or the first speaker.
+    header_end = turns[0].line_no - 1
+    roster_start = find_roster_start(lines)
+    if roster_start is not None:
+        header_end = min(header_end, roster_start)
+    header = header_lines(lines, header_end)
+
     return ParsedTranscript(
         participants=participants,
         segments=segments,
         roster_source="participant_list" if participants else "heuristic",
         unknown_speakers=unknown_speakers,
         warnings=warnings,
+        header=header,
+        call_title=read_call_title(header),
+        call_date=read_call_date(header),
     )
 
 
-def _drop_empty_turns(turns: list[Turn], warnings: list[str]) -> tuple[list[Turn], list[list[Paragraph]]]:
+def _drop_empty_turns(
+    turns: list[Turn], warnings: list[str], blank_lines_separate: bool
+) -> tuple[list[Turn], list[list[Paragraph]]]:
     """Split each turn into paragraphs, and drop turns with no text at all."""
     kept_turns = []
     kept_paragraphs = []
     silent_speakers = []
     for turn in turns:
-        paragraphs = split_paragraphs(turn.lines)
+        paragraphs = split_paragraphs(turn.lines, blank_lines_separate)
         if paragraphs:
             kept_turns.append(turn)
             kept_paragraphs.append(paragraphs)

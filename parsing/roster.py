@@ -102,3 +102,12 @@ def find_unrecognised_roster(lines: list[str]) -> tuple[list[str], int]:
         )
     last_list_end = max((list_end for _, list_end in lists_found), default=0)
     return warnings, last_list_end
+
+
+def find_roster_start(lines: list[str]) -> int | None:
+    """The index of the participant list's first header line, or None if there isn't one."""
+    for i, raw_line in enumerate(lines):
+        header = raw_line.strip().removesuffix(":").strip()
+        if MANAGEMENT_HEADER.fullmatch(header) or ANALYST_HEADER.fullmatch(header):
+            return i
+    return None

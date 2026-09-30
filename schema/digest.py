@@ -8,11 +8,9 @@ from dataclasses import dataclass
 class DigestMeta:
     """Facts about the call and the run, shown in the title and footer."""
 
-    company: str
-    ticker: str  # may be empty
-    quarter: str
+    call_title: str  # from the transcript's header, or the file name if it has none
     call_date: str
-    source: str
+    source: str  # the transcript's file name
     model: str
     prompt_version: str
     structured_output_mode: str | None

@@ -10,6 +10,10 @@ OPERATOR = "Operator"
 MIN_WORDS = 1500
 MIN_SPEAKERS = 2
 MIN_SEGMENTS = 3
+# If at least this share of a transcript's lines are blank, blank lines separate paragraphs.
+# Below it (some transcripts have one paragraph per line and almost no blank lines), a line
+# that ends a sentence ends a paragraph instead.
+BLANK_LINE_PARAGRAPHS_MIN_SHARE = 0.1
 # How much of the last paragraph to show when warning that it ends mid-sentence.
 TRUNCATION_PREVIEW_LENGTH = 40
 
@@ -37,6 +41,15 @@ QA_HANDOFF_WORD = "question"
 # How many "Name - Title" lines in a row, under a header we don't recognise, look like
 # a participant list rather than a stray line.
 MIN_UNRECOGNISED_ROSTER_ENTRIES = 2
+
+# The header line that names the call, e.g. "Q2 2026 Earnings Conference Call".
+CALL_TITLE = re.compile(r"\bearnings\b.*\bcall\b", re.I)
+# A full date in the header: "August 6, 2026", "Wednesday July 29, 2026", "Oct. 22, 2026".
+MONTHS = (
+    "January|February|March|April|May|June|July|August|September|October|November|December"
+    "|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec"
+)
+FULL_DATE = re.compile(r"\b(?:" + MONTHS + r")\.?\s+\d{1,2},?\s+\d{4}\b")
 
 # Participant-list headers (matched against the whole line, minus a trailing colon).
 MANAGEMENT_HEADER = re.compile(r"(?:company|corporate)\s+participants|executives", re.I)

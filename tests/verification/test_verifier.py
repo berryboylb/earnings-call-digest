@@ -61,3 +61,21 @@ def test_model_comparison_flag_is_a_note_and_the_transcript_decides(northwind):
     assert items[0].status == "verified"  # the transcript presents $412.6M as the current result
     assert any("marked this figure as a prior-period comparison" in note for note in items[0].notes)
     assert items[1].reasons == ["$371.2 million is a prior-period comparison in the transcript, not a current result"]
+
+
+def test_recall_skips_a_section_whose_extraction_failed(northwind):
+    qa_empty = [candidate.raw for candidate in verify_run(northwind, make_run(qa={})).possibly_missed]
+    assert "50 basis points" in qa_empty  # a Q&A number no item covers
+
+    qa_failed = [candidate.raw for candidate in verify_run(northwind, make_run(qa="failed")).possibly_missed]
+    assert "50 basis points" not in qa_failed  # Q&A wasn't extracted, so it isn't "missed"
+
+
+def test_neutral_forward_word_is_not_hedging_language(northwind):
+    forecast = {"theme": "Revenue expectation", "hedging_phrase": "expect", "speaker": "Priya Raman",
+                "quote": "For the fourth quarter, we expect revenue between $425 million and $440 million."}
+    real_risk = {"theme": "Tariffs", "hedging_phrase": "could pressure", "speaker": "Priya Raman",
+                 "quote": "We also continue to monitor tariff developments, which could pressure component costs in the fourth quarter."}
+    forecast_item, risk_item = verify_run(northwind, make_run(prepared={"risks": [forecast, real_risk]})).items
+    assert forecast_item.reasons == ["not hedging language: 'expect'"]
+    assert risk_item.status == "verified"

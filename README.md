@@ -36,13 +36,21 @@ uv run main.py
 
 It runs every transcript in `data/`, prints each stage's results, and writes a folder
 `out/<name>/` with `extraction.json`, `verified.json` and `digest.html`, `digest.pdf`
-and `digest.docx`. Call details for the digest's title (company, ticker, quarter, date,
-source) come from `data/<name>.json`. To run one transcript, put only that file in
-`data/`.
+and `digest.docx`. The only input is the `.txt` transcript: the digest's title and call
+date are read from the transcript's own header lines. To run one transcript, put only
+that file in `data/`.
 
-LLM answers are cached in `.cache/`, so a rerun replays them instead of calling the
-API again. Delete `.cache/` to force fresh calls. Optional fallback models and endpoint
-settings are described in `.env.example`. Run tests with `uv run pytest -q`.
+Evaluation (step 5) runs only for transcripts that have a hand-written answer key,
+`data/<name>.gold.json`. Other transcripts skip it; they still get parsed, extracted,
+verified and rendered.
+
+Each run starts clean: `out/` is emptied first, and the model is always asked fresh
+(answers are still saved in `.cache/` as a record of what it said). A request may take
+several minutes on a long transcript; the limit is `LLM_TIMEOUT_SECONDS` (default 600).
+While it waits, the run prints which model it's asking and how long each answer took.
+A timeout moves on to the next fallback model; rate limits and server errors are retried
+twice first. Optional fallback models and endpoint settings are described in
+`.env.example`. Run tests with `uv run pytest -q`.
 
 ## Project layout
 

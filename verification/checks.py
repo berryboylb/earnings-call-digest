@@ -8,9 +8,14 @@ import re
 
 from constants.verification import (
     DIRECTION_CUES,
+    FULL_YEAR_HEADING,
+    FULL_YEAR_PERIOD,
+    NEUTRAL_FORWARD_WORDS,
     PRIOR_PERIOD_AFTER,
     PRIOR_PERIOD_BEFORE,
     PRIOR_PERIOD_WINDOW,
+    QUARTER_HEADING,
+    QUARTER_PERIOD,
 )
 from schema.verification import Amount, SourceMatch, VerifiedItem
 from utils.names import contains_words, name_key
@@ -138,9 +143,35 @@ def check_direction(item: VerifiedItem, index: TranscriptIndex) -> None:
     item.reasons.append(f"direction '{claimed}' not supported: the sentence has no direction word")
 
 
+def check_guidance_period(item: VerifiedItem, index: TranscriptIndex) -> None:
+    """A guidance item's period must agree with the outlook heading above it.
+
+    The CFO usually announces the period before giving guidance ("Now, to the outlook for
+    our first quarter"). If the nearest such heading earlier in the same turn names a
+    quarter and the item says full year (or the other way round), the item needs review.
+    """
+    heading = _nearest_outlook_heading(item, index)
+    if heading is None:
+        return
+    heading_text, heading_is_quarter = heading
+
+    period = item.fields["period"]
+    if QUARTER_PERIOD.search(period):
+        period_is_quarter = True
+    elif FULL_YEAR_PERIOD.search(period):
+        period_is_quarter = False
+    else:
+        return  # the period doesn't say which kind it is, so there's nothing to compare
+    if period_is_quarter != heading_is_quarter:
+        item.reasons.append(f"period conflicts with the outlook heading: '{heading_text}'")
+
+
 def check_hedging_phrase(item: VerifiedItem, index: TranscriptIndex) -> None:
-    """The hedging phrase must appear word for word in the paragraph the quote came from."""
+    """The hedging phrase must be real hedging language, and appear word for word in the
+    paragraph the quote came from. "expect" or "should" alone is a forecast, not a risk."""
     phrase = item.fields["hedging_phrase"]
+    if " ".join(phrase.lower().strip(" .,;:!?").split()) in NEUTRAL_FORWARD_WORDS:
+        item.reasons.append(f"not hedging language: '{phrase}'")
     phrase_words = tuple(token.text for token in tokenise(phrase))
     paragraph_words = tuple(token.text for token in index.paragraph_of(item.source).tokens)
     if not contains_words(paragraph_words, phrase_words):
@@ -181,3 +212,23 @@ def _find_cue(sentence: str, cues: list[str]) -> str | None:
         if match:
             return match.group()
     return None
+
+
+def _nearest_outlook_heading(item: VerifiedItem, index: TranscriptIndex) -> tuple[str, bool] | None:
+    """The last outlook heading before the item's quote, in the same speaker's turn.
+    Returns (the heading's sentence, True if it names a quarter), or None."""
+    segment = index.segment_of(item.source)
+    found = None
+    for paragraph_index, paragraph in enumerate(segment.paragraphs[:item.source.paragraph_index + 1]):
+        text = paragraph.text
+        if paragraph_index == item.source.paragraph_index:
+            text = text[:item.source.start]  # only what comes before the quote
+        for pattern, is_quarter in [(QUARTER_HEADING, True), (FULL_YEAR_HEADING, False)]:
+            for match in pattern.finditer(text):
+                if found is None or (paragraph_index, match.start()) > found[0]:
+                    start, end = sentence_context(paragraph.text, match.start(), match.end())
+                    found = ((paragraph_index, match.start()), paragraph.text[start:end], is_quarter)
+    if found is None:
+        return None
+    _, heading_text, is_quarter = found
+    return heading_text, is_quarter

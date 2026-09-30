@@ -3,6 +3,8 @@
 It returns exactly what the model said; checking it against the transcript is Stage 3.
 """
 
+import time
+from collections.abc import Callable
 from typing import Any
 
 from pydantic import BaseModel
@@ -23,7 +25,8 @@ class NvidiaProvider:
     2. The main model (LLM_MODEL), with one repair attempt if its answer is invalid.
     3. Each fallback model (LLM_MODEL_FALLBACK) in turn, if the one before failed.
 
-    `last_model` and `last_mode` record which model answered, and how.
+    `last_model` and `last_mode` record which model answered, and how. While it waits for
+    a model it prints progress lines, so a long wait never looks like a hang.
     Tests pass a fake `client`, which then stands in for every model's API.
     """
 
@@ -33,6 +36,8 @@ class NvidiaProvider:
         cache_mode: CacheMode = "auto",
         client: Any = None,
         cache: DiskCache | None = None,
+        log: Callable[[str], None] | None = None,
+        sleep: Callable[[float], None] = time.sleep,
     ):
         self.settings = settings
         self.model = settings.model
@@ -42,8 +47,9 @@ class NvidiaProvider:
         self.usage = Usage()
         self.last_model = None
         self.last_mode = None
+        self.log = log or _print_now
         self.clients = [
-            LlmClient(endpoint, settings, self.usage, client) for endpoint in settings.endpoints
+            LlmClient(endpoint, settings, self.usage, client, sleep) for endpoint in settings.endpoints
         ]
 
     def complete(
@@ -63,12 +69,19 @@ class NvidiaProvider:
                 raise LlmError(f"No cached response for '{name}' and cache mode is 'cached'.")
 
         errors = []  # (model, what went wrong)
-        for client, key in zip(self.clients, cache_keys):
+        for i, (client, key) in enumerate(zip(self.clients, cache_keys)):
+            model = client.endpoint.model
+            self.log(f"  [{name}] asking {model} ...")
+            started = time.monotonic()
             try:
                 answer, raw_text, mode = self._ask(client, system, user, schema, schema_json)
             except LlmError as error:
-                errors.append((client.endpoint.model, str(error)))
+                errors.append((model, str(error)))
+                next_model = self.clients[i + 1].endpoint.model if i + 1 < len(self.clients) else None
+                then = f"; trying {next_model}" if next_model else ""
+                self.log(f"  [{name}] {model} failed after {_duration(started)}: {error}{then}")
                 continue
+            self.log(f"  [{name}] answered in {_duration(started)}")
             self.cache.put(key, raw=raw_text, parsed=answer.model_dump(mode="json"), structured_output_mode=mode)
             self.last_model = client.endpoint.model
             self.last_mode = mode
@@ -121,3 +134,15 @@ class NvidiaProvider:
             user=user,
             schema=schema_json,
         )
+
+
+def _print_now(message: str) -> None:
+    print(message, flush=True)
+
+
+def _duration(started: float) -> str:
+    """Time since `started`, e.g. "45s" or "3m12s"."""
+    seconds = int(time.monotonic() - started)
+    if seconds < 60:
+        return f"{seconds}s"
+    return f"{seconds // 60}m{seconds % 60:02d}s"

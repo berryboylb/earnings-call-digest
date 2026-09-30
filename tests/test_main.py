@@ -6,7 +6,7 @@ from main import run
 from providers.fixture import FixtureProvider
 
 ROOT = Path(__file__).parents[1]
-NORTHWIND = ROOT / "data" / "sample_northwind_q3fy26.txt"
+NORTHWIND = ROOT / "tests" / "fixtures" / "sample_northwind_q3fy26.txt"
 FIXTURE = ROOT / "tests" / "fixtures" / "northwind.extraction.json"
 
 
@@ -52,3 +52,12 @@ def test_run_reports_failure(tmp_path, capsys):
 
     assert ok is False
     assert "[prepared] ok" in out and "[qa] failed | error: Fixture has no output for 'qa'." in out
+
+
+def test_run_empties_the_output_folder_first(tmp_path):
+    out = tmp_path / "out"
+    (out / "old_transcript").mkdir(parents=True)
+    (out / "old_transcript" / "digest.html").write_text("from a previous run")
+    run(FixtureProvider(FIXTURE), data_dir_with_northwind(tmp_path), out)
+    assert not (out / "old_transcript").exists()
+    assert (out / "sample_northwind_q3fy26" / "digest.html").exists()

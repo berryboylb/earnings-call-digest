@@ -23,3 +23,26 @@ PDF_UNAVAILABLE = (
     "PDF not written: WeasyPrint could not load its system libraries ({error}). "
     "On macOS, run `brew install pango`. The HTML and DOCX files were still written."
 )
+
+# The digest must scan in under a minute, so the main tables are capped. Verified items that
+# don't fit go to the "Other reported figures" and "Other risk language" tables further down.
+MAX_HEADLINE_FIGURES = 12
+MAX_MAIN_RISKS = 6
+MAX_POSSIBLY_MISSED = 10
+
+# Which figures are headline figures, most important first. A figure's metric name is matched
+# against these keywords (whole words, any case); when several match, the longest keyword
+# decides, so "Revenue growth" counts as growth, not revenue. Keyword rules, not understanding.
+FIGURE_PRIORITY = [
+    ["revenue"],
+    ["revenue growth", "revenue grew"],
+    ["operating income"],
+    ["operating margin"],
+    ["eps", "earnings per share"],
+    ["gross margin"],
+    ["cloud", "azure", "segment"],
+    ["capex", "capital expenditure", "capital expenditures"],
+    ["operating cash flow", "cash flow from operations"],
+    ["free cash flow"],
+    ["bookings", "rpo", "remaining performance obligation", "backlog"],
+]

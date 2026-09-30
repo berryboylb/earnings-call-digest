@@ -2,8 +2,11 @@
 
 import re
 
-# How many times the openai SDK retries a failed request (rate limit, server error, timeout).
-SDK_MAX_RETRIES = 2
+# Rate limits, server errors and dropped connections are retried this many times, pausing
+# RETRY_PAUSE_SECONDS longer before each try. Timeouts are not retried: a model that is too
+# slow or stuck in a queue hands over to the next model instead.
+TRANSIENT_RETRIES = 2
+RETRY_PAUSE_SECONDS = 5
 
 # Ways of asking for structured output, most to least strict. Not every NVIDIA-hosted
 # model supports json_schema, so the provider steps down if the server rejects one.

@@ -4,11 +4,16 @@ Only verified items reach the four main tables. Everything comes straight from t
 verification result; nothing here is written by an LLM.
 """
 
+import re
 from datetime import datetime, timezone
 
 from constants.rendering import (
     BANNER,
+    FIGURE_PRIORITY,
     LIMITS_LINE,
+    MAX_HEADLINE_FIGURES,
+    MAX_MAIN_RISKS,
+    MAX_POSSIBLY_MISSED,
     NEEDS_REVIEW_NOTE,
     NONE_IDENTIFIED,
     NOT_AVAILABLE,
@@ -18,6 +23,7 @@ from constants.rendering import (
 )
 from schema.digest import DigestMeta, DigestView, Table
 from schema.verification import VerificationResult, VerifiedItem
+from utils.numbers import parse_amounts
 
 
 def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datetime | None = None) -> DigestView:
@@ -34,12 +40,16 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
         return NONE_IDENTIFIED
 
     both_sections = ["prepared", "qa"]
+    headline_figures, other_figures = _split_headline_figures(of_kind("figure"))
+    main_risks = of_kind("risk")[:MAX_MAIN_RISKS]
+    other_risks = of_kind("risk")[MAX_MAIN_RISKS:]
+    missed_rows, missed_total = _possibly_missed_rows(result)
+
     tables = [
         Table(
             title="Headline figures",
-            headers=["Metric", "Value", "Period", "Basis", "Said by", "Src"],
-            rows=[[f["metric"], f["value"], f["period"], f["basis"], item.speaker, sources(item)]
-                  for item, f in _with_fields(of_kind("figure"))],
+            headers=FIGURE_HEADERS,
+            rows=[_figure_row(item) for item in headline_figures],
             empty_text=empty_text(both_sections),
         ),
         Table(
@@ -51,9 +61,8 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
         ),
         Table(
             title="Risks & hedging",
-            headers=["Theme", "Language used", "Said by", "Src"],
-            rows=[[f["theme"], f["hedging_phrase"], item.speaker, sources(item)]
-                  for item, f in _with_fields(of_kind("risk"))],
+            headers=RISK_HEADERS,
+            rows=[_risk_row(item) for item in main_risks],
             empty_text=empty_text(both_sections),
         ),
         Table(
@@ -64,6 +73,15 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
             empty_text=empty_text(["qa"]),
             note=QA_NOTE,
         ),
+    ]
+    # Verified items that didn't fit in the main tables; left out when there are none.
+    if other_figures:
+        tables.append(Table(title="Other reported figures", headers=FIGURE_HEADERS,
+                            rows=[_figure_row(item) for item in other_figures], empty_text=NONE_IDENTIFIED))
+    if other_risks:
+        tables.append(Table(title="Other risk language", headers=RISK_HEADERS,
+                            rows=[_risk_row(item) for item in other_risks], empty_text=NONE_IDENTIFIED))
+    tables += [
         Table(
             title="Needs review",
             headers=["ID", "Item", "Why it failed"],
@@ -72,17 +90,16 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
             note=NEEDS_REVIEW_NOTE,
         ),
         Table(
-            title="Possibly missed",
+            title=_possibly_missed_title(len(missed_rows), missed_total),
             headers=["Src", "Said by", "Number", "Context"],
-            rows=[[missed.segment_id, missed.speaker, missed.raw, missed.context]
-                  for missed in result.possibly_missed],
+            rows=missed_rows,
             empty_text=NONE_IDENTIFIED,  # found by code from the transcript, not by extraction
             note=POSSIBLY_MISSED_NOTE,
         ),
     ]
 
     return DigestView(
-        title=_title(meta),
+        title=meta.call_title,
         subtitle=f"Call date {meta.call_date} · Source: {meta.source}",
         banner=BANNER.format(sections=" and ".join(failed_sections)) if failed_sections else None,
         trust_line=TRUST_LINE.format(
@@ -106,6 +123,63 @@ def sources(item: VerifiedItem) -> str:
     return "+".join(segment_ids)
 
 
+FIGURE_HEADERS = ["Metric", "Value", "Period", "Basis", "Said by", "Src"]
+RISK_HEADERS = ["Theme", "Language used", "Said by", "Src"]
+
+
+def _figure_row(item: VerifiedItem) -> list[str]:
+    fields = item.fields
+    return [fields["metric"], fields["value"], fields["period"], fields["basis"], item.speaker, sources(item)]
+
+
+def _risk_row(item: VerifiedItem) -> list[str]:
+    return [item.fields["theme"], item.fields["hedging_phrase"], item.speaker, sources(item)]
+
+
+def _split_headline_figures(figures: list[VerifiedItem]) -> tuple[list[VerifiedItem], list[VerifiedItem]]:
+    """The MAX_HEADLINE_FIGURES most important figures (by FIGURE_PRIORITY, then in the order
+    they were said), and the rest. Both keep the order they were said in."""
+    def importance(i: int) -> tuple[int, int]:
+        return _priority(figures[i].fields["metric"]), i
+
+    ranked = sorted(range(len(figures)), key=importance)
+    headline = set(ranked[:MAX_HEADLINE_FIGURES])
+    return (
+        [figure for i, figure in enumerate(figures) if i in headline],
+        [figure for i, figure in enumerate(figures) if i not in headline],
+    )
+
+
+def _priority(metric: str) -> int:
+    """The index of the FIGURE_PRIORITY group whose keyword matches the metric best (the
+    longest match wins); figures that match no keyword come last."""
+    best_rank = len(FIGURE_PRIORITY)
+    best_length = 0
+    for rank, keywords in enumerate(FIGURE_PRIORITY):
+        for keyword in keywords:
+            if re.search(r"\b" + re.escape(keyword) + r"\b", metric, re.I) and len(keyword) > best_length:
+                best_rank, best_length = rank, len(keyword)
+    return best_rank
+
+
+def _possibly_missed_rows(result: VerificationResult) -> tuple[list[list[str]], int]:
+    """At most MAX_POSSIBLY_MISSED rows, currency amounts first, otherwise in transcript order.
+    Returns (rows, how many there were in total)."""
+    def currency_first(missed) -> bool:
+        return not any(amount.unit == "currency" for amount in parse_amounts(missed.raw))
+
+    candidates = sorted(result.possibly_missed, key=currency_first)  # keeps transcript order within each group
+    rows = [[missed.segment_id, missed.speaker, missed.raw, missed.context]
+            for missed in candidates[:MAX_POSSIBLY_MISSED]]
+    return rows, len(candidates)
+
+
+def _possibly_missed_title(shown: int, total: int) -> str:
+    if total > shown:
+        return f"Possibly missed (showing {shown} of {total})"
+    return "Possibly missed"
+
+
 def _with_fields(items: list[VerifiedItem]) -> list[tuple[VerifiedItem, dict]]:
     return [(item, item.fields) for item in items]
 
@@ -119,11 +193,6 @@ def _describe(item: VerifiedItem) -> str:
     if item.kind == "risk":
         return f"Risk: {fields['theme']}"
     return f"Q&A: {fields['topic']}"
-
-
-def _title(meta: DigestMeta) -> str:
-    company = f"{meta.company} ({meta.ticker})" if meta.ticker else meta.company
-    return f"{company} · {meta.quarter} earnings call"
 
 
 def _footer(meta: DigestMeta, generated_at: datetime) -> str:

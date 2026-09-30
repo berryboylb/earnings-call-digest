@@ -1,22 +1,38 @@
 """Splits a turn into paragraphs, and marks the safe-harbor boilerplate inside them."""
 
 from constants.parsing import (
+    BLANK_LINE_PARAGRAPHS_MIN_SHARE,
     BOILERPLATE_EXTENDERS,
     BOILERPLATE_MIN_MATCHES,
     BOILERPLATE_PATTERNS,
+    SENTENCE_END,
 )
 from schema.transcript import Paragraph, Segment
 from utils.text import matches_any, split_sentences
 
 
-def split_paragraphs(lines: list[str]) -> list[Paragraph]:
-    """Group lines into paragraphs. A blank line ends a paragraph."""
+def uses_blank_lines(lines: list[str]) -> bool:
+    """True if the transcript separates paragraphs with blank lines (most do). False if
+    blank lines are rare, as in transcripts with one paragraph per line."""
+    blank = sum(1 for line in lines if not line.strip())
+    text = len(lines) - blank
+    return text > 0 and blank / text >= BLANK_LINE_PARAGRAPHS_MIN_SHARE
+
+
+def split_paragraphs(lines: list[str], blank_lines_separate: bool = True) -> list[Paragraph]:
+    """Group a turn's lines into paragraphs.
+
+    With blank_lines_separate, a blank line ends a paragraph. Without it, a line that
+    ends a sentence ends a paragraph, and lines that stop mid-sentence (text wrapped at
+    a fixed width) are joined.
+    """
     paragraphs = []
     current_lines = []
     for line in lines + [""]:  # the extra blank line closes the last paragraph
         if line:
             current_lines.append(line)
-        elif current_lines:
+        ends_paragraph = not line or (not blank_lines_separate and SENTENCE_END.search(line))
+        if ends_paragraph and current_lines:
             text = " ".join(current_lines)
             paragraphs.append(Paragraph(text, _find_boilerplate(text)))
             current_lines = []

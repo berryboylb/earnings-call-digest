@@ -11,8 +11,8 @@ from schema.extraction import Extraction, ExtractionRun, SectionResult, Usage
 from verification.verifier import verify_run
 
 ROOT = Path(__file__).parents[2]
-NORTHWIND = ROOT / "data" / "sample_northwind_q3fy26.txt"
-MERIDIAN = ROOT / "data" / "meridian.txt"
+NORTHWIND = ROOT / "tests" / "fixtures" / "sample_northwind_q3fy26.txt"
+MERIDIAN = ROOT / "tests" / "fixtures" / "meridian.txt"
 PLANTED = ROOT / "tests" / "fixtures" / "northwind.planted.extraction.json"
 
 EMPTY = {"figures": [], "guidance": [], "risks": [], "qa_topics": []}

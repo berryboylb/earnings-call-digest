@@ -3,9 +3,10 @@ then evaluates the result if there is a hand-written answer key.
 
 Each transcript gets a folder out/<name>/ with extraction.json, verified.json and the
 digest as HTML, PDF and DOCX, plus eval.json and eval.md when data/<name>.gold.json exists.
-Call details (company, ticker, quarter, date, source) come from data/<name>.json.
+The digest's title and date are read from the transcript's own header.
 """
 
+import shutil
 import sys
 from pathlib import Path
 
@@ -29,7 +30,12 @@ from verification.verifier import verify_run
 
 
 def run(provider: Provider, data_dir: Path = DATA_DIR, output_dir: Path = OUTPUT_DIR) -> bool:
-    """Process every transcript in data_dir. Returns False if any extraction failed."""
+    """Process every transcript in data_dir. Returns False if any extraction failed.
+
+    The output folder is emptied first, so it only ever holds this run's results.
+    """
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     all_ok = True
     for transcript in sorted(data_dir.glob("*.txt")):
         print(f"\n##### {transcript.name}", flush=True)
@@ -51,7 +57,7 @@ def run(provider: Provider, data_dir: Path = DATA_DIR, output_dir: Path = OUTPUT
         _save(folder / "verified.json", verification.model_dump_json(indent=2))
 
         print("\n=== 4. render ===")
-        view = build_view(verification, load_meta(transcript, extraction))
+        view = build_view(verification, load_meta(transcript, parsed, extraction))
         html = render_html(view)
         _save(folder / DIGEST_FILES["html"], html)
         try:
@@ -87,5 +93,6 @@ def _save(path: Path, text: str) -> None:
 
 
 if __name__ == "__main__":
-    ok = run(NvidiaProvider(load_settings()))
+    # "refresh": always ask the model fresh. Answers are still saved in .cache/ as a record.
+    ok = run(NvidiaProvider(load_settings(), cache_mode="refresh"))
     sys.exit(0 if ok else 1)

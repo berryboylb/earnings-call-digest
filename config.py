@@ -11,7 +11,8 @@ OUTPUT_DIR = Path("out")
 
 DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
 DEFAULT_TEMPERATURE = 0.0
-DEFAULT_TIMEOUT_SECONDS = 120.0
+# One request may take minutes: long transcripts and reasoning models give long answers.
+DEFAULT_TIMEOUT_SECONDS = 600.0
 DEFAULT_CACHE_DIR = Path(".cache/llm")
 
 
@@ -81,6 +82,7 @@ def load_settings(require_api_key: bool = True) -> Settings:
         model=model,
         fallbacks=tuple(fallbacks),
         reasoning_effort=_read_env("LLM_REASONING_EFFORT"),
+        timeout=float(_read_env("LLM_TIMEOUT_SECONDS") or DEFAULT_TIMEOUT_SECONDS),
     )
 
 
