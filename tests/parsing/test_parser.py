@@ -1,6 +1,8 @@
 import pytest
 
-from parsing import ParseError, parse_transcript, segment_text
+from parsing.paragraphs import segment_text
+from parsing.parser import parse_transcript
+from schema.transcript import ParseError
 
 
 def test_text_with_no_speakers_raises():
@@ -14,9 +16,9 @@ def test_single_speaker_raises():
 
 
 def test_truncated_transcript_warns_mid_sentence(kestrel_text):
-    assert not any("mid-sentence" in w for w in parse_transcript(kestrel_text).warnings)
+    assert not any("mid-sentence" in warning for warning in parse_transcript(kestrel_text).warnings)
     truncated = kestrel_text.rstrip().removesuffix(" next quarter.")
-    assert any("mid-sentence" in w for w in parse_transcript(truncated).warnings)
+    assert any("mid-sentence" in warning for warning in parse_transcript(truncated).warnings)
 
 
 def test_normalises_crlf_and_nbsp(kestrel_text, by_speaker):
@@ -29,10 +31,10 @@ def test_meridian_end_to_end(meridian):
     segs = meridian.segments
     assert meridian.roster_source == "participant_list"
     assert len(segs) == 29
-    assert [s.section for s in segs].index("qa") == 5
+    assert [segment.section for segment in segs].index("qa") == 5
     assert segs[5].id == "S6" and segs[5].speaker == "Operator"
 
-    emma_qa = [s for s in segs if s.speaker == "Emma Chen" and s.section == "qa"]
+    emma_qa = [segment for segment in segs if segment.speaker == "Emma Chen" and segment.section == "qa"]
     assert len(emma_qa) == 1 and emma_qa[0].role == "management"
 
     s15, s17 = segs[14], segs[16]

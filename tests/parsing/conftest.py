@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from parsing import parse_file
+from parsing.parser import parse_file
 
 KESTREL = Path(__file__).parents[1] / "fixtures" / "fictional_kestrel_q2.txt"
 MERIDIAN = Path(__file__).parents[2] / "data" / "meridian.txt"
@@ -49,7 +49,7 @@ def layout_b():
 @pytest.fixture(scope="session")
 def by_speaker():
     def _by_speaker(result, name):
-        return [s for s in result.segments if s.speaker == name]
+        return [segment for segment in result.segments if segment.speaker == name]
     return _by_speaker
 
 

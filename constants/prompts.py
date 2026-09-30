@@ -1,12 +1,9 @@
-"""The system prompt and the user message built from transcript segments."""
-
-from __future__ import annotations
+"""Prompt text sent to the LLM, and its version (part of the cache key)."""
 
 import re
 
-from parsing import Segment, segment_text
-
-from .models import SectionName
+# Part of the cache key: change it whenever the prompt text changes.
+PROMPT_VERSION = "v1"
 
 SYSTEM_PROMPT = """\
 You extract structured facts from an earnings call transcript for an investment research analyst.
@@ -26,27 +23,17 @@ Rules:
 - Leave out anything not in the text. An empty list is a correct answer.
 Return only JSON matching the schema."""
 
-SECTION_HEADERS: dict[SectionName, str] = {
+SECTION_HEADERS = {
     "prepared": "Section: PREPARED REMARKS. qa_topics must be an empty list.",
     "qa": "Section: QUESTION-AND-ANSWER. Include qa_topics, plus any figures, guidance or risks management states here.",
 }
 
 # Opening or closing transcript tags inside the text itself (tolerating case and spaces),
 # so the transcript can't close the data block early.
-_TRANSCRIPT_TAG = re.compile(r"<\s*/?\s*transcript\s*>", re.I)
+TRANSCRIPT_TAG = re.compile(r"<\s*/?\s*transcript\s*>", re.I)
 
+# Added to the system prompt when the model can't be given the schema through response_format.
+SCHEMA_INSTRUCTIONS = "\n\nReturn a JSON object that matches this JSON schema:\n"
 
-def render_segments(segments: list[Segment]) -> list[str]:
-    """One "[S4 | Name | role]\\ntext" block per segment, skipping segments left empty
-    once boilerplate is removed."""
-    blocks = []
-    for seg in segments:
-        text = _TRANSCRIPT_TAG.sub("", segment_text(seg)).strip()
-        if text:
-            blocks.append(f"[{seg.id} | {seg.speaker} | {seg.role}]\n{text}")
-    return blocks
-
-
-def build_user_message(section: SectionName, segments: list[Segment]) -> str:
-    body = "\n\n".join(render_segments(segments))
-    return f"{SECTION_HEADERS[section]}\n\n<transcript>\n{body}\n</transcript>"
+# Sent back to the model, with its own answer, when that answer doesn't match the schema.
+REPAIR_INSTRUCTIONS = "Your output failed validation: {errors}. Return corrected JSON only."

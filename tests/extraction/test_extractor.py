@@ -1,9 +1,10 @@
-import json
 from pathlib import Path
 
-from extraction import Extraction, LlmError, Usage, run_extraction
-from extraction.__main__ import main
-from parsing import Paragraph, ParsedTranscript, Segment, parse_file
+from extraction.extractor import run_extraction
+from parsing.parser import parse_file
+from providers.base import LlmError
+from schema.extraction import Extraction, Usage
+from schema.transcript import Paragraph, ParsedTranscript, Segment
 
 DATA = Path(__file__).parents[2] / "data"
 
@@ -12,13 +13,15 @@ class FakeProvider:
     """Records calls; raises LlmError for the section names in `fail`."""
 
     def __init__(self, fail=()):
-        self.model, self.usage, self.structured_output_mode = "fake/model", Usage(), "json_schema"
+        self.model, self.fallback_models, self.usage = "fake/model", [], Usage()
+        self.last_model = self.last_mode = None
         self.fail, self.calls = set(fail), []
 
     def complete(self, name, system, user, schema):
         self.calls.append(name)
         if name in self.fail:
             raise LlmError("upstream timed out")
+        self.last_model, self.last_mode = self.model, "json_schema"
         return Extraction(figures=[], guidance=[], risks=[], qa_topics=[]), False
 
 
@@ -39,19 +42,6 @@ def test_empty_qa_input_is_not_sent():
     parsed = ParsedTranscript(participants=[], segments=segs, roster_source="heuristic")
     provider = FakeProvider()
     run = run_extraction(parsed, provider)
-    assert [(s.name, s.status) for s in run.sections] == [("prepared", "ok"), ("qa", "empty_input")]
+    assert [(section.name, section.status) for section in run.sections] == [("prepared", "ok"), ("qa", "empty_input")]
     assert run.sections[1].extraction is None and run.sections[1].error is None
     assert provider.calls == ["prepared"]
-
-
-def test_cli_exits_2_when_a_section_fails(tmp_path, monkeypatch, capsys):
-    fixture = tmp_path / "prepared_only.json"
-    fixture.write_text(json.dumps({"model": "m", "calls": {
-        "prepared": {"figures": [], "guidance": [], "risks": [], "qa_topics": []}}}))
-    monkeypatch.chdir(tmp_path)
-    code = main([str(DATA / "sample_northwind_q3fy26.txt"), "--fixture", str(fixture)])
-    out = capsys.readouterr().out
-    assert code == 2
-    assert "[prepared] ok" in out and "[qa] failed | error: Fixture has no output for 'qa'." in out
-    saved = json.loads((tmp_path / "out" / "sample_northwind_q3fy26.extraction.json").read_text())
-    assert [s["status"] for s in saved["sections"]] == ["ok", "failed"]

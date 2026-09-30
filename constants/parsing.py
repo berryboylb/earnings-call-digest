@@ -3,8 +3,20 @@
 
 import re
 
-MIN_WORDS = 1500
 OPERATOR = "Operator"
+
+# Warnings and errors: a transcript shorter than this may be incomplete; fewer speakers or
+# segments than this is not a usable call.
+MIN_WORDS = 1500
+MIN_SPEAKERS = 2
+MIN_SEGMENTS = 3
+# How much of the last paragraph to show when warning that it ends mid-sentence.
+TRUNCATION_PREVIEW_LENGTH = 40
+
+# An invisible character some files start with.
+BYTE_ORDER_MARK = "\ufeff"
+# The curly apostrophe, treated like a straight one when comparing names ("O’Neil" = "O'Neil").
+CURLY_APOSTROPHE = "’"
 
 # Non-breaking and figure spaces that some sources put inside names and numbers.
 NBSP_CHARS = ("\u00a0", "\u202f", "\u2007")
@@ -75,7 +87,9 @@ QA_START_PHRASES = re.compile(
     re.I,
 )
 
-# Safe-harbor language. A paragraph is boilerplate if it matches 2 or more of these.
+# Safe-harbor language. A paragraph is boilerplate if it matches at least
+# BOILERPLATE_MIN_MATCHES of these.
+BOILERPLATE_MIN_MATCHES = 2
 BOILERPLATE_PATTERNS = [
     re.compile(r"forward[\s-]+looking\s+statements?", re.I),
     re.compile(r"safe\s+harbou?r", re.I),

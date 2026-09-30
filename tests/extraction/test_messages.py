@@ -2,9 +2,11 @@ from pathlib import Path
 
 import pytest
 
-from extraction.extract import section_inputs
-from extraction.prompts import SYSTEM_PROMPT, build_user_message
-from parsing import Paragraph, Segment, parse_file
+from constants.prompts import SYSTEM_PROMPT
+from extraction.extractor import section_inputs
+from extraction.messages import build_user_message
+from parsing.parser import parse_file
+from schema.transcript import Paragraph, Segment
 
 NORTHWIND = Path(__file__).parents[2] / "data" / "sample_northwind_q3fy26.txt"
 

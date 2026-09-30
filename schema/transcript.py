@@ -1,6 +1,4 @@
-"""Data model for a parsed transcript. No logic here."""
-
-from __future__ import annotations
+"""The shape of a parsed transcript: participants, segments and paragraphs."""
 
 from dataclasses import dataclass, field
 from typing import Literal
@@ -23,13 +21,13 @@ class Participant:
 @dataclass
 class Paragraph:
     text: str
-    # (start, end) character offsets into `text` of safe-harbor boilerplate.
+    # Where the safe-harbor boilerplate is in `text`, as (start, end) character positions.
     boilerplate_spans: list[tuple[int, int]] = field(default_factory=list)
 
     @property
     def boilerplate(self) -> bool:
-        """True only if boilerplate covers the whole paragraph."""
-        return any(s == 0 and e == len(self.text) for s, e in self.boilerplate_spans)
+        """True only if the whole paragraph is boilerplate."""
+        return (0, len(self.text)) in self.boilerplate_spans
 
 
 @dataclass

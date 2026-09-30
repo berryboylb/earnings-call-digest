@@ -1,8 +1,10 @@
 import pytest
 
-from extraction import Extraction, LlmError, NvidiaProvider
-from extraction.cache import cache_key
-from tests.extraction.fakes import FakeClient, response, settings
+from providers.base import LlmError
+from providers.nvidia import NvidiaProvider
+from schema.extraction import Extraction
+from tests.providers.fakes import FakeClient, response, settings
+from utils.cache import cache_key
 
 KEY_ARGS = dict(base_url="https://integrate.api.nvidia.com/v1", model="m", reasoning_effort="",
                 prompt_version="v1", name="prepared", system="S", user="U",
@@ -24,7 +26,7 @@ def test_replay_works_across_provider_instances_and_keeps_the_mode(tmp_path):
     NvidiaProvider(settings(tmp_path), client=FakeClient(response())).complete("qa", "S", "U", Extraction)
     replayer = NvidiaProvider(settings(tmp_path), cache_mode="cached", client=FakeClient())
     assert replayer.complete("qa", "S", "U", Extraction)[1] is True
-    assert replayer.structured_output_mode == "json_schema"
+    assert replayer.last_mode == "json_schema"
 
 
 @pytest.mark.parametrize("field, value", [

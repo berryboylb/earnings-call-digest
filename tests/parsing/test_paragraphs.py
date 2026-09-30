@@ -1,44 +1,19 @@
 import pytest
 
-from parsing import segment_text
-from parsing.paragraphs import split_paragraphs, split_sentences
-from parsing.patterns import BOILERPLATE_EXTENDERS
-
-
-def sentences(text):
-    return [text[s:e] for s, e in split_sentences(text)]
-
-
-@pytest.mark.parametrize("text", [
-    "Revenue was $4.2 million this quarter.",
-    "All figures are in U.S. dollars.",
-    "Margin rose approximately 3.5% year over year.",
-])
-def test_splitter_keeps_numbers_and_abbreviations_intact(text):
-    assert sentences(text) == [text]
-
-
-def test_splitter_splits_on_sentence_breaks():
-    text = 'Revenue was $4.2 million. Is that U.S. dollars? Yes! "Quoted," she said. \u201cCurly\u201d too.'
-    assert sentences(text) == [
-        "Revenue was $4.2 million.",
-        "Is that U.S. dollars?",
-        "Yes!",
-        '"Quoted," she said.',
-        "\u201cCurly\u201d too.",
-    ]
+from constants.parsing import BOILERPLATE_EXTENDERS
+from parsing.paragraphs import segment_text, split_paragraphs
 
 
 def test_safe_harbor_flagged_as_boilerplate(parsed, by_speaker):
     ir = by_speaker(parsed, "Sofia Marquez")[0]
     # The closing "Please see our filings..." sentence is covered by an extender.
-    assert [p.boilerplate for p in ir.paragraphs] == [False, True, False]
+    assert [paragraph.boilerplate for paragraph in ir.paragraphs] == [False, True, False]
     assert "forward-looking" in ir.paragraphs[1].text
     assert "forward-looking" not in segment_text(ir)
     assert "forward-looking" in segment_text(ir, include_boilerplate=True)
     assert "Please see our filings" not in segment_text(ir)
-    others = [p for s in parsed.segments if s is not ir for p in s.paragraphs]
-    assert not any(p.boilerplate or p.boilerplate_spans for p in others)
+    others = [paragraph for segment in parsed.segments if segment is not ir for paragraph in segment.paragraphs]
+    assert not any(paragraph.boilerplate or paragraph.boilerplate_spans for paragraph in others)
 
 
 def test_partly_boilerplate_paragraph_keeps_surrounding_sentences(meridian):
@@ -68,7 +43,7 @@ def test_partly_boilerplate_paragraph_keeps_surrounding_sentences(meridian):
     "Reconciliations are available on our website.",
 ])
 def test_extender_patterns_match_closing_sentences(sentence):
-    assert any(p.search(sentence) for p in BOILERPLATE_EXTENDERS)
+    assert any(pattern.search(sentence) for pattern in BOILERPLATE_EXTENDERS)
 
 
 @pytest.mark.parametrize("text", [

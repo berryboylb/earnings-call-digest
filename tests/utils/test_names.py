@@ -1,4 +1,10 @@
-from parsing.names import contains, looks_like_name, looks_like_title, name_key, split_name_title
+from utils.names import (
+    contains_words,
+    looks_like_name,
+    looks_like_title,
+    name_key,
+    split_name_title,
+)
 
 
 def test_name_key_ignores_case_punctuation_and_initials():
@@ -34,6 +40,6 @@ def test_split_name_title_handles_separators():
 
 def test_contains_matches_consecutive_words():
     text = name_key("Our next question comes from Alex Chen with Citi.")
-    assert contains(text, ("alex", "chen"))
-    assert not contains(text, ("chen", "alex"))
-    assert not contains(text, ())
+    assert contains_words(text, ("alex", "chen"))
+    assert not contains_words(text, ("chen", "alex"))
+    assert not contains_words(text, ())

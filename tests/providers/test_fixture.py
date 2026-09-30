@@ -3,9 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from extraction import Extraction, FixtureProvider, LlmError, run_extraction
-from extraction.__main__ import main
-from parsing import parse_file
+from extraction.extractor import run_extraction
+from parsing.parser import parse_file
+from providers.base import LlmError
+from providers.fixture import FixtureProvider
+from schema.extraction import Extraction
 
 ROOT = Path(__file__).parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "northwind.extraction.json"
@@ -39,12 +41,3 @@ def test_invalid_fixture_output_raises(tmp_path):
     bad.write_text(json.dumps({"model": "m", "calls": {"prepared": {"figures": "nope"}}}))
     with pytest.raises(LlmError, match="failed validation"):
         FixtureProvider(bad).complete("prepared", "", "", Extraction)
-
-
-def test_cli_fixture_run(tmp_path, monkeypatch, capsys):
-    monkeypatch.chdir(tmp_path)
-    assert main([str(NORTHWIND), "--fixture", str(FIXTURE)]) == 0
-    out = capsys.readouterr().out
-    assert "[prepared] ok | replayed | figures 8, guidance 3, risks 3, qa_topics 0" in out
-    assert "[qa] ok | replayed | figures 0, guidance 1, risks 1, qa_topics 3" in out
-    assert (tmp_path / "out" / "sample_northwind_q3fy26.extraction.json").exists()

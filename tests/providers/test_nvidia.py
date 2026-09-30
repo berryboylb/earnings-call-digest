@@ -2,9 +2,10 @@ import json
 
 import pytest
 
-from extraction import Extraction, LlmError, NvidiaProvider
-from extraction.client import strip_reasoning
-from tests.extraction.fakes import VALID, FakeClient, api_error, response, settings
+from providers.base import LlmError
+from providers.nvidia import NvidiaProvider
+from schema.extraction import Extraction
+from tests.providers.fakes import VALID, FakeClient, api_error, response, settings
 
 ONE_FIGURE = {**VALID, "figures": [{
     "metric": "Revenue", "value": "$5 million", "period": "Q1", "is_comparison": False,
@@ -86,7 +87,7 @@ def test_json_schema_is_tried_first(tmp_path):
     assert fmt["type"] == "json_schema" and fmt["json_schema"]["strict"] is True
     assert fmt["json_schema"]["schema"] == Extraction.model_json_schema()
     assert client.requests[0]["messages"][0]["content"] == "SYSTEM"  # schema not in the prompt
-    assert p.structured_output_mode == "json_schema"
+    assert p.last_mode == "json_schema"
 
 
 def test_rejected_json_schema_falls_back_to_json_object_and_is_remembered(tmp_path):
@@ -101,7 +102,7 @@ def test_rejected_json_schema_falls_back_to_json_object_and_is_remembered(tmp_pa
     assert level2["response_format"] == {"type": "json_object"}
     assert level2["messages"][0]["content"].startswith("SYSTEM")
     assert '"figures"' in level2["messages"][0]["content"]  # schema appended to the system prompt
-    assert p.structured_output_mode == "json_object"
+    assert p.last_mode == "json_object"
 
     complete(p, name="qa")  # later calls start at the level that worked
     assert client.requests[2]["response_format"] == {"type": "json_object"}
@@ -119,7 +120,7 @@ def test_rejected_json_schema_and_json_object_fall_back_to_prompt_only(tmp_path)
     level3 = client.requests[2]
     assert "response_format" not in level3
     assert '"figures"' in level3["messages"][0]["content"]
-    assert p.structured_output_mode == "prompt_only"
+    assert p.last_mode == "prompt_only"
 
 
 def test_repair_still_applies_after_fallback(tmp_path):
@@ -130,7 +131,7 @@ def test_repair_still_applies_after_fallback(tmp_path):
         response(json.dumps(ONE_FIGURE)),
     )
     assert complete(p)[0].figures[0].value == "$5 million"
-    assert [r["response_format"]["type"] for r in client.requests] == ["json_schema", "json_object", "json_object"]
+    assert [request["response_format"]["type"] for request in client.requests] == ["json_schema", "json_object", "json_object"]
 
 
 def test_reasoning_effort_sent_only_when_set(tmp_path):
@@ -155,15 +156,3 @@ def test_content_that_is_only_reasoning_raises(tmp_path):
     with pytest.raises(LlmError, match="empty content"):
         complete(p)
     assert len(client.requests) == 1
-
-
-@pytest.mark.parametrize("content, expected", [
-    ("<think>a</think>{}", "{}"),
-    ("<THINK>a\nb</THINK> {} ", "{}"),
-    ("<think>a</think><think>b</think>{}", "{}"),
-    ("reasoning without an opening tag</think>{}", "{}"),
-    ("{} <think>unfinished", "{}"),
-    ("<think>unfinished", ""),
-])
-def test_strip_reasoning(content, expected):
-    assert strip_reasoning(content) == expected

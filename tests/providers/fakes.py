@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import openai
 
-from extraction import Settings
+from config import Settings
 
 VALID = {"figures": [], "guidance": [], "risks": [], "qa_topics": []}
 

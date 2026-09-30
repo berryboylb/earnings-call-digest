@@ -1,14 +1,14 @@
-"""Pydantic models: what the LLM must return, and the results of a run.
+"""The shape of what the LLM must return, and of the results of a run.
 
-The LLM-facing models forbid extra fields and make every field required, because
-strict JSON-schema mode needs every property listed as required.
+The models the LLM fills in forbid extra fields and make every field required,
+because strict JSON-schema mode needs every field listed as required.
 """
-
-from __future__ import annotations
 
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from constants.llm import MAX_CONTEXT_QUOTES
 
 
 class _Strict(BaseModel):
@@ -25,7 +25,7 @@ class Figure(_Strict):
     basis: Literal["GAAP", "non-GAAP", "not stated"]
     speaker: str
     quote: str
-    context_quotes: list[str] = Field(max_length=2)
+    context_quotes: list[str] = Field(max_length=MAX_CONTEXT_QUOTES)
 
 
 class Guidance(_Strict):
@@ -35,7 +35,7 @@ class Guidance(_Strict):
     direction: Literal["raised", "lowered", "reaffirmed", "initiated", "not stated"]
     speaker: str
     quote: str
-    context_quotes: list[str] = Field(max_length=2)
+    context_quotes: list[str] = Field(max_length=MAX_CONTEXT_QUOTES)
 
 
 class Risk(_Strict):
@@ -78,13 +78,17 @@ class SectionResult(BaseModel):
     extraction: Extraction | None
     error: str | None
     replayed: bool
+    # Which model produced the extraction (the primary or a fallback), and how structured
+    # output was requested: "json_schema", "json_object", "prompt_only" or "fixture".
+    model: str | None = None
+    structured_output_mode: str | None = None
 
 
 class ExtractionRun(BaseModel):
     sections: list[SectionResult]
-    model: str
+    model: str  # the primary model
+    fallback_models: list[str]
     prompt_version: str
-    # How structured output was requested: "json_schema", "json_object", "prompt_only",
-    # or "fixture". None if no call was made.
+    # The structured-output mode(s) the sections used, comma-separated; None if no section got output.
     structured_output_mode: str | None
     usage: Usage

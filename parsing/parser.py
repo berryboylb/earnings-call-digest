@@ -1,91 +1,101 @@
-"""Stage 1: split a raw earnings call transcript into speaker segments.
+"""Turns raw transcript text into speaker segments.
 
-No AI here. Later stages check every extracted quote against these segments, so the
-parser has to be explicit about WHO said WHAT and in WHICH section. When it can't be
-sure, it adds a warning or raises ParseError. It never guesses silently.
+No AI here: later stages check every quote the LLM extracts against these segments.
+When the parser isn't sure about something, it adds a warning or raises ParseError.
 """
-
-from __future__ import annotations
 
 from pathlib import Path
 
-from .checks import quality_warnings, validate
-from .models import Paragraph, ParsedTranscript, ParseError, Section, Segment
-from .names import name_key
-from .paragraphs import split_paragraphs
-from .patterns import NBSP_CHARS
-from .roles import assign_roles
-from .roster import find_unrecognised_roster, parse_roster
-from .sections import find_qa_start
-from .turns import Turn, split_turns
+from parsing.paragraphs import split_paragraphs
+from parsing.roster import find_unrecognised_roster, parse_roster
+from parsing.sections import find_qa_start
+from parsing.speakers import Turn, assign_roles, split_turns
+from parsing.validation import quality_warnings, validate
+from schema.transcript import Paragraph, ParsedTranscript, ParseError, Section, Segment
+from utils.names import name_key
+from utils.text import normalise_text
 
 
-def _normalise(text: str) -> str:
-    """Remove the BOM, unify line endings, and replace non-breaking spaces with spaces."""
-    text = text.replace("\ufeff", "").replace("\r\n", "\n").replace("\r", "\n")
-    for nbsp in NBSP_CHARS:
-        text = text.replace(nbsp, " ")
-    return "\n".join(line.rstrip() for line in text.split("\n"))
-
-
-def _drop_empty_turns(
-    turns: list[Turn], warnings: list[str]
-) -> tuple[list[Turn], list[list[Paragraph]]]:
-    """Split each turn into paragraphs once, and drop turns that have none."""
-    paragraphs = [split_paragraphs(t.lines) for t in turns]
-    silent = [t.speaker for t, p in zip(turns, paragraphs) if not p]
-    if silent:
-        warnings.append(f"Dropped speaker lines with no text: {', '.join(silent)}")
-    kept = [(t, p) for t, p in zip(turns, paragraphs) if p]
-    if not kept:
-        raise ParseError("No speaker turns found; is this an earnings call transcript?")
-    return [t for t, _ in kept], [p for _, p in kept]
-
-
-def _label_sections(turns: list[Turn], warnings: list[str]) -> list[Section]:
-    qa_start = find_qa_start(turns)
-    if qa_start is None:
-        warnings.append("No Q&A section found; all segments marked 'prepared'.")
-        qa_start = len(turns)
-    return ["qa" if i >= qa_start else "prepared" for i in range(len(turns))]
+def parse_file(path: str | Path) -> ParsedTranscript:
+    text = Path(path).read_text(encoding="utf-8-sig")
+    return parse_transcript(text)
 
 
 def parse_transcript(text: str) -> ParsedTranscript:
     """Parse transcript text into speaker segments. Raises ParseError if the result can't be trusted."""
-    lines = _normalise(text).split("\n")
+    warnings = []
+    lines = normalise_text(text).split("\n")
 
+    # 1. The participant list says who is management and who is an analyst.
     participants, body_start = parse_roster(lines)
-    roster = {name_key(p.name): p for p in participants}
-    warnings: list[str] = []
     if not participants:
-        warnings, unrecognised_end = find_unrecognised_roster(lines)
-        body_start = max(body_start, unrecognised_end)
+        unrecognised_list_warnings, unrecognised_list_end = find_unrecognised_roster(lines)
+        warnings += unrecognised_list_warnings
+        body_start = max(body_start, unrecognised_list_end)
+    roster = {name_key(participant.name): participant for participant in participants}
 
+    # 2. Split the rest of the text into speaker turns.
     turns, turn_warnings = split_turns(lines[body_start:], roster, first_line_no=body_start + 1)
     warnings += turn_warnings
     turns, paragraphs = _drop_empty_turns(turns, warnings)
 
+    # 3. Mark each turn "prepared" or "qa", and decide each speaker's role.
     sections = _label_sections(turns, warnings)
     roles = assign_roles(turns, sections, roster)
 
-    segments = [
-        Segment(f"S{i + 1}", t.speaker, roles[t.speaker], sections[i], paragraphs[i])
-        for i, t in enumerate(turns)
-    ]
+    # 4. Build the segments, then check them.
+    segments = []
+    for i, turn in enumerate(turns):
+        segments.append(Segment(
+            id=f"S{i + 1}",
+            speaker=turn.speaker,
+            role=roles[turn.speaker],
+            section=sections[i],
+            paragraphs=paragraphs[i],
+        ))
 
-    speakers = list(dict.fromkeys(s.speaker for s in segments))
+    speakers = list(dict.fromkeys(segment.speaker for segment in segments))  # unique, in order
     validate(segments, speakers)
-    unknown = [s for s in speakers if roles[s] == "unknown"]
-    warnings += quality_warnings(segments, unknown, has_participant_list=bool(participants))
+    unknown_speakers = [speaker for speaker in speakers if roles[speaker] == "unknown"]
+    warnings += quality_warnings(segments, unknown_speakers, has_participant_list=bool(participants))
 
     return ParsedTranscript(
         participants=participants,
         segments=segments,
         roster_source="participant_list" if participants else "heuristic",
-        unknown_speakers=unknown,
+        unknown_speakers=unknown_speakers,
         warnings=warnings,
     )
 
 
-def parse_file(path: str | Path) -> ParsedTranscript:
-    return parse_transcript(Path(path).read_text(encoding="utf-8-sig"))
+def _drop_empty_turns(turns: list[Turn], warnings: list[str]) -> tuple[list[Turn], list[list[Paragraph]]]:
+    """Split each turn into paragraphs, and drop turns with no text at all."""
+    kept_turns = []
+    kept_paragraphs = []
+    silent_speakers = []
+    for turn in turns:
+        paragraphs = split_paragraphs(turn.lines)
+        if paragraphs:
+            kept_turns.append(turn)
+            kept_paragraphs.append(paragraphs)
+        else:
+            silent_speakers.append(turn.speaker)
+
+    if silent_speakers:
+        warnings.append(f"Dropped speaker lines with no text: {', '.join(silent_speakers)}")
+    if not kept_turns:
+        raise ParseError("No speaker turns found; is this an earnings call transcript?")
+    return kept_turns, kept_paragraphs
+
+
+def _label_sections(turns: list[Turn], warnings: list[str]) -> list[Section]:
+    """Mark each turn "prepared" or "qa". Every turn from the start of Q&A on is "qa"."""
+    qa_start = find_qa_start(turns)
+    if qa_start is None:
+        warnings.append("No Q&A section found; all segments marked 'prepared'.")
+        qa_start = len(turns)
+
+    sections = []
+    for i in range(len(turns)):
+        sections.append("qa" if i >= qa_start else "prepared")
+    return sections
