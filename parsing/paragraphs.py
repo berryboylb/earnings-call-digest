@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .models import Paragraph, Segment
-from .patterns import BOILERPLATE_PATTERNS, SENTENCE_BREAK
+from .patterns import BOILERPLATE_EXTENDERS, BOILERPLATE_PATTERNS, SENTENCE_BREAK
 
 
 def split_sentences(text: str) -> list[tuple[int, int]]:
@@ -20,17 +20,26 @@ def split_sentences(text: str) -> list[tuple[int, int]]:
 def _boilerplate_spans(text: str) -> list[tuple[int, int]]:
     """The boilerplate part of a paragraph, as at most one (start, end) span.
 
-    A paragraph has boilerplate if 2 or more patterns match it. The span runs from
-    the first sentence matching any pattern to the last one, inclusive; sentences
-    before or after that run are not boilerplate.
+    A paragraph has boilerplate if 2 or more patterns match it (extenders don't
+    count). The span runs from the first sentence matching a pattern to the last
+    sentence matching a pattern or an extender, inclusive; sentences outside that
+    run are not boilerplate.
     """
     if sum(bool(p.search(text)) for p in BOILERPLATE_PATTERNS) < 2:
         return []
-    hits = [
-        (s, e) for s, e in split_sentences(text)
-        if any(p.search(text[s:e]) for p in BOILERPLATE_PATTERNS)
+    sentences = split_sentences(text)
+    starts = [(s, e) for s, e in sentences if _matches(text[s:e], BOILERPLATE_PATTERNS)]
+    if not starts:
+        return []
+    ends = [
+        (s, e) for s, e in sentences
+        if _matches(text[s:e], BOILERPLATE_PATTERNS) or _matches(text[s:e], BOILERPLATE_EXTENDERS)
     ]
-    return [(hits[0][0], hits[-1][1])] if hits else []
+    return [(starts[0][0], ends[-1][1])]
+
+
+def _matches(sentence: str, patterns: list) -> bool:
+    return any(p.search(sentence) for p in patterns)
 
 
 def split_paragraphs(lines: list[str]) -> list[Paragraph]:

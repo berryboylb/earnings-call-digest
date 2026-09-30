@@ -87,6 +87,25 @@ BOILERPLATE_PATTERNS = [
     re.compile(r"non-gaap.*reconcil|reconcil.*non-gaap", re.I),
 ]
 
+# Sentences that commonly close a safe-harbor passage. They never count toward the
+# 2-match threshold; inside a paragraph that is already flagged, they extend the
+# boilerplate span to cover them.
+BOILERPLATE_EXTENDERS = [
+    # "Please see our filings with the SEC for more information."
+    re.compile(
+        r"see\s+our\s+(?:most\s+recent\s+)?(?:sec\s+filings|filings|(?:form\s+)?10-[kq]|annual\s+report)"
+        r"\b.*?\bfor\s+(?:more|additional)\s+information",
+        re.I,
+    ),
+    # "Please refer to our Form 10-K for a discussion of these risks."
+    re.compile(
+        r"refer\s+to\s+our\s+(?:most\s+recent\s+)?(?:filings|(?:form\s+)?10-[kq]|earnings\s+release)\b",
+        re.I,
+    ),
+    # "Reconciliations are available in our earnings release."
+    re.compile(r"reconciliations?\s+(?:are|is)\s+available", re.I),
+]
+
 # The end of a sentence: . ! ? or …, optionally followed by closing quotes or brackets.
 SENTENCE_END = re.compile(r"[.!?…][\"'’”)\]]*$")
 
