@@ -8,6 +8,7 @@ dependencies = [
     "openai>=3.22.1",
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.3",
+    "rapidfuzz>=3.14.6",
 ]
 
 [dependency-groups]

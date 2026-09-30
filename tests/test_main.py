@@ -30,6 +30,11 @@ def test_run_parses_extracts_and_saves_every_transcript(tmp_path, capsys):
     saved = json.loads((tmp_path / "out" / "sample_northwind_q3fy26.extraction.json").read_text())
     assert [section["status"] for section in saved["sections"]] == ["ok", "ok"]
 
+    assert out.index("=== 2. extract ===") < out.index("=== 3. verify ===")
+    assert "19 items: 18 verified, 1 need review" in out
+    verified = json.loads((tmp_path / "out" / "sample_northwind_q3fy26.verified.json").read_text())
+    assert verified["section_status"] == {"prepared": "ok", "qa": "ok"}
+
 
 def test_run_reports_failure(tmp_path, capsys):
     prepared_only = tmp_path / "prepared_only.json"

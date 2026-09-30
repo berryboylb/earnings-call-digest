@@ -1,0 +1,180 @@
+{
+  "_comment": "Hand-written, not model output, WITH PLANTED MISTAKES, for data/sample_northwind_q3fy26.txt (fictional). Correct items quote the transcript verbatim. Planted: a hallucinated figure, an altered number (14% vs 12%), prior-year revenue reported as current, a duplicate of a correct figure, a paraphrased-but-close quote, an analyst's number attributed to the CEO, and guidance marked 'raised' where the transcript says 'reaffirming'.",
+  "model": "hand-written-planted-fixture",
+  "calls": {
+    "prepared": {
+      "figures": [
+        {
+          "metric": "Revenue",
+          "value": "$412.6 million",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Priya Raman",
+          "quote": "Third quarter revenue was $412.6 million, compared to $371.2 million in the third quarter of last year.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Revenue",
+          "value": "$412.6 million",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Marcus Oyelaran",
+          "quote": "Revenue reached $412.6 million, up 11% year over year, driven by record shipments of our warehouse automation systems.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Recurring software revenue",
+          "value": "$150.0 million",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Marcus Oyelaran",
+          "quote": "Recurring software revenue reached $150.0 million, a new quarterly record.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Services revenue growth",
+          "value": "14%",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Marcus Oyelaran",
+          "quote": "Our services business continued to grow, with services revenue up 14% year over year as our installed base expanded.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Revenue",
+          "value": "$371.2 million",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Priya Raman",
+          "quote": "Third quarter revenue was $412.6 million, compared to $371.2 million in the third quarter of last year.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Gross margin",
+          "value": "41.3%",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "GAAP",
+          "speaker": "Priya Raman",
+          "quote": "GAAP gross margins was 41.3%, up 120 basis points from a year ago, reflecting better mix and lower component costs.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Operating income",
+          "value": "$52.8 million",
+          "period": "Q3 fiscal 2026",
+          "is_comparison": false,
+          "basis": "GAAP",
+          "speaker": "Priya Raman",
+          "quote": "GAAP operating income was $52.8 million, and non-GAAP operating margin was 16.1%.",
+          "context_quotes": []
+        }
+      ],
+      "guidance": [
+        {
+          "metric": "Revenue",
+          "range": "$1.60 billion to $1.64 billion",
+          "period": "fiscal 2026",
+          "direction": "raised",
+          "speaker": "Priya Raman",
+          "quote": "For fiscal 2026, we now expect revenue in the range of $1.60 billion to $1.64 billion, up from our prior range of $1.55 billion to $1.60 billion.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Non-GAAP earnings per share",
+          "range": "$2.10 to $2.20",
+          "period": "fiscal 2026",
+          "direction": "raised",
+          "speaker": "Priya Raman",
+          "quote": "We are reaffirming our full-year non-GAAP earnings per share guidance of $2.10 to $2.20.",
+          "context_quotes": []
+        },
+        {
+          "metric": "Revenue",
+          "range": "$425 million to $440 million",
+          "period": "Q4 fiscal 2026",
+          "direction": "not stated",
+          "speaker": "Priya Raman",
+          "quote": "For the fourth quarter, we expect revenue between $425 million and $440 million.",
+          "context_quotes": []
+        }
+      ],
+      "risks": [
+        {
+          "theme": "Foreign exchange",
+          "hedging_phrase": "a meaningful headwind",
+          "speaker": "Priya Raman",
+          "quote": "Foreign exchange was a meaningful headwind this quarter, reducing reported revenue by approximately $9 million."
+        },
+        {
+          "theme": "Tariffs and component costs",
+          "hedging_phrase": "could pressure",
+          "speaker": "Priya Raman",
+          "quote": "We also continue to monitor tariff developments, which could pressure component costs in the fourth quarter."
+        }
+      ],
+      "qa_topics": []
+    },
+    "qa": {
+      "figures": [
+        {
+          "metric": "Order growth",
+          "value": "30%",
+          "period": "Q2 fiscal 2026",
+          "is_comparison": false,
+          "basis": "not stated",
+          "speaker": "Marcus Oyelaran",
+          "quote": "Orders grew about 30% last quarter by my math.",
+          "context_quotes": []
+        }
+      ],
+      "guidance": [
+        {
+          "metric": "Gross margin",
+          "range": "40% to 42%",
+          "period": "Q4 fiscal 2026",
+          "direction": "not stated",
+          "speaker": "Priya Raman",
+          "quote": "We expect gross margin to remain in the 40% to 42% range in the fourth quarter.",
+          "context_quotes": []
+        }
+      ],
+      "risks": [
+        {
+          "theme": "Tariff impact on gross margin",
+          "hedging_phrase": "we believe we can partially offset",
+          "speaker": "Priya Raman",
+          "quote": "If the proposed tariffs take effect, we estimate an impact of roughly 50 basis points, which we believe we can partially offset through pricing."
+        }
+      ],
+      "qa_topics": [
+        {
+          "topic": "Order growth pace in Q3 and demand in Europe",
+          "asked_by": "Ethan Brooks",
+          "answer_quality": "partial",
+          "speaker": "Marcus Oyelaran",
+          "quote": "In Europe, it's really a timing question."
+        },
+        {
+          "topic": "Sustainability of gross margin given tariff risk",
+          "asked_by": "Lena Kovacs",
+          "answer_quality": "direct",
+          "speaker": "Priya Raman",
+          "quote": "We expect gross margin to remain in the 40% to 42% range in the fourth quarter."
+        },
+        {
+          "topic": "Capital expenditures for next year",
+          "asked_by": "Samuel Adeyemi",
+          "answer_quality": "deflected",
+          "speaker": "Priya Raman",
+          "quote": "We're not providing fiscal 2027 guidance today, but we expect capital expenditures to remain at a similar level as a percentage of revenue."
+        }
+      ]
+    }
+  }
+}

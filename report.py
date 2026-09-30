@@ -3,6 +3,7 @@
 from constants.report import QUOTE_PREVIEW_LENGTH
 from schema.extraction import Extraction, ExtractionRun
 from schema.transcript import ParsedTranscript
+from schema.verification import VerificationResult, VerifiedItem
 
 
 def print_parse(parsed: ParsedTranscript) -> None:
@@ -67,6 +68,55 @@ def item_lines(extraction: Extraction) -> list[str]:
         row[-1] = row[-1][:QUOTE_PREVIEW_LENGTH]
         lines.append(" | ".join(row))
     return lines
+
+
+def print_verification(result: VerificationResult) -> None:
+    """Section statuses, then verified items, items that need review (with every reason),
+    numbers that may have been missed, and the counts."""
+    statuses = ", ".join(f"{name} {status}" for name, status in result.section_status.items())
+    print(f"sections: {statuses}")
+
+    verified = [item for item in result.items if item.status == "verified"]
+    needs_review = [item for item in result.items if item.status == "unverified"]
+
+    print(f"\nVERIFIED ({len(verified)})")
+    for item in verified:
+        _print_item(item)
+
+    print(f"\nNEEDS REVIEW ({len(needs_review)})")
+    for item in needs_review:
+        _print_item(item)
+
+    print(f"\nPOSSIBLY MISSED ({len(result.possibly_missed)})")
+    for candidate in result.possibly_missed:
+        print(f"  {candidate.segment_id} {candidate.speaker}: {candidate.raw}  \"...{candidate.context}...\"")
+
+    print(f"\n{len(result.items)} items: {len(verified)} verified, {len(needs_review)} need review; "
+          f"{len(result.possibly_missed)} numbers possibly missed")
+
+
+def _print_item(item: VerifiedItem) -> None:
+    fields = item.fields
+    if item.kind == "figure":
+        summary = [fields["metric"], fields["value"], fields["period"], fields["basis"]]
+    elif item.kind == "guidance":
+        summary = [fields["metric"], fields["range"], fields["period"], fields["direction"]]
+    elif item.kind == "risk":
+        summary = [fields["theme"], fields["hedging_phrase"]]
+    else:
+        summary = [fields["topic"], f"asked by {fields['asked_by']}, {fields['answer_quality']}"]
+
+    segment_ids = []
+    for match in [item.source, *item.context]:
+        if match is not None and match.segment_id not in segment_ids:
+            segment_ids.append(match.segment_id)
+    where = ", ".join(segment_ids) or "not found"
+
+    print(f"  {item.id:<4} {item.kind:<9} {' | '.join(summary)} | {item.speaker or item.speaker_claimed} | {where}")
+    for reason in item.reasons:
+        print(f"         - {reason}")
+    for note in item.notes:
+        print(f"         note: {note}")
 
 
 def _paragraph_mark(paragraph) -> str:
