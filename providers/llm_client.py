@@ -97,6 +97,7 @@ class LlmClient:
             "model": self.endpoint.model,
             "messages": [{"role": "system", "content": system}, *messages],
             "temperature": self.settings.temperature,
+            "max_tokens": self.settings.max_tokens,
         }
         if mode == "json_schema":
             request["response_format"] = {

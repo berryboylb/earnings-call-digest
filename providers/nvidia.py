@@ -47,6 +47,7 @@ class NvidiaProvider:
         self.usage = Usage()
         self.last_model = None
         self.last_mode = None
+        self.last_failures = []
         self.log = log or _print_now
         self.clients = [
             LlmClient(endpoint, settings, self.usage, client, sleep) for endpoint in settings.endpoints
@@ -85,6 +86,7 @@ class NvidiaProvider:
             self.cache.put(key, raw=raw_text, parsed=answer.model_dump(mode="json"), structured_output_mode=mode)
             self.last_model = client.endpoint.model
             self.last_mode = mode
+            self.last_failures = [f"{model}: {message}" for model, message in errors]
             return answer, False
 
         if len(errors) == 1:
@@ -101,6 +103,7 @@ class NvidiaProvider:
                 self.usage.replayed_calls += 1
                 self.last_model = client.endpoint.model
                 self.last_mode = entry["structured_output_mode"]
+                self.last_failures = []
                 return schema.model_validate(entry["parsed"])
         return None
 

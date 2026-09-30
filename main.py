@@ -83,7 +83,7 @@ def run(provider: Provider, data_dir: Path = DATA_DIR, output_dir: Path = OUTPUT
                     print(f"wrote {path}")
                 print("\n".join(headline_lines(evaluation)), flush=True)
 
-        all_ok &= all(section.status != "failed" for section in extraction.sections)
+        all_ok &= all(section.status not in ("failed", "partial") for section in extraction.sections)
     return all_ok
 
 

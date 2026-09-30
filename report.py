@@ -46,6 +46,8 @@ def print_extraction(run: ExtractionRun) -> None:
         items = section.extraction
         print(f"\n[{section.name}] {section.status} | {source} | figures {len(items.figures)}, "
               f"guidance {len(items.guidance)}, risks {len(items.risks)}, qa_topics {len(items.qa_topics)}")
+        if section.error:
+            print(f"  failed calls: {section.error}")
         for line in item_lines(items):
             print(f"  {line}")
 

@@ -72,9 +72,20 @@ class Usage(BaseModel):
     completion_tokens: int = 0
 
 
+class CallRecord(BaseModel):
+    """One LLM call: which model answered it, or why it failed."""
+
+    name: str  # e.g. "prepared S4 part 2 of 3, 2,410 words"
+    status: Literal["ok", "failed"]
+    model: str | None = None  # the model that actually answered
+    earlier_failures: list[str] = Field(default_factory=list)  # models tried before it: "model: error"
+    error: str | None = None  # why the call failed, if it did
+
+
 class SectionResult(BaseModel):
     name: SectionName
-    status: Literal["ok", "failed", "empty_input"]
+    # "partial": some of the section's calls failed; items from the others are still here.
+    status: Literal["ok", "partial", "failed", "empty_input"]
     extraction: Extraction | None
     error: str | None
     replayed: bool
@@ -82,6 +93,9 @@ class SectionResult(BaseModel):
     # output was requested: "json_schema", "json_object", "prompt_only" or "fixture".
     model: str | None = None
     structured_output_mode: str | None = None
+    failed_calls: list[str] = Field(default_factory=list)  # e.g. "S4 part 2 of 3: timed out after 600s"
+    failed_segments: list[str] = Field(default_factory=list)  # segment ids those calls covered
+    calls: list[CallRecord] = Field(default_factory=list)
 
 
 class ExtractionRun(BaseModel):

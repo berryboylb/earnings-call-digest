@@ -14,6 +14,9 @@ DEFAULT_TEMPERATURE = 0.0
 # One request may take minutes: long transcripts and reasoning models give long answers.
 DEFAULT_TIMEOUT_SECONDS = 600.0
 DEFAULT_CACHE_DIR = Path(".cache/llm")
+# The most tokens one answer may use. Reasoning models count their hidden reasoning too:
+# past answers used about 12,000 tokens per call, so this leaves room.
+DEFAULT_MAX_TOKENS = 16384
 
 
 class ConfigError(Exception):
@@ -38,6 +41,7 @@ class Settings:
     reasoning_effort: str = ""  # empty means: don't send a reasoning setting
     temperature: float = DEFAULT_TEMPERATURE
     timeout: float = DEFAULT_TIMEOUT_SECONDS
+    max_tokens: int = DEFAULT_MAX_TOKENS
     cache_dir: Path = DEFAULT_CACHE_DIR
 
     @property
@@ -83,6 +87,7 @@ def load_settings(require_api_key: bool = True) -> Settings:
         fallbacks=tuple(fallbacks),
         reasoning_effort=_read_env("LLM_REASONING_EFFORT"),
         timeout=float(_read_env("LLM_TIMEOUT_SECONDS") or DEFAULT_TIMEOUT_SECONDS),
+        max_tokens=int(_read_env("LLM_MAX_TOKENS") or DEFAULT_MAX_TOKENS),
     )
 
 

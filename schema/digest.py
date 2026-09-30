@@ -11,7 +11,7 @@ class DigestMeta:
     call_title: str  # from the transcript's header, or the file name if it has none
     call_date: str
     source: str  # the transcript's file name
-    model: str
+    answered_by: str  # per section: which model answered, e.g. "prepared: model-a (4 calls); qa: ..."
     prompt_version: str
     structured_output_mode: str | None
     replayed: bool  # True if every LLM answer came from the cache

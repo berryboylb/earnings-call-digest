@@ -19,7 +19,8 @@ def test_hand_written_fixture_round_trips():
     assert "hand-written" in data["_comment"].lower()
     run = run_extraction(parse_file(NORTHWIND), FixtureProvider(FIXTURE))
     assert run.model == "hand-written-fixture" and run.structured_output_mode == "fixture"
-    assert run.usage.replayed_calls == 2 and run.usage.calls == 0
+    # three prepared-remarks speaker turns and the Q&A, each answered from the fixture
+    assert run.usage.replayed_calls == 4 and run.usage.calls == 0
     for section in run.sections:
         assert section.status == "ok" and section.replayed is True
         assert section.extraction.model_dump(mode="json") == data["calls"][section.name]

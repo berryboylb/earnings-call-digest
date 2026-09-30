@@ -66,4 +66,5 @@ class MissedCandidate(BaseModel):
 class VerificationResult(BaseModel):
     items: list[VerifiedItem]
     possibly_missed: list[MissedCandidate]
-    section_status: dict[str, str]  # copied from the extraction run: "ok", "failed" or "empty_input"
+    section_status: dict[str, str]  # copied from the extraction run: "ok", "partial", "failed" or "empty_input"
+    failed_calls: dict[str, list[str]] = Field(default_factory=dict)  # section -> labels of calls that failed

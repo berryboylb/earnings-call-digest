@@ -17,6 +17,7 @@ from constants.rendering import (
     NEEDS_REVIEW_NOTE,
     NONE_IDENTIFIED,
     NOT_AVAILABLE,
+    PARTIAL_BANNER,
     POSSIBLY_MISSED_NOTE,
     QA_NOTE,
     TRUST_LINE,
@@ -101,7 +102,7 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
     return DigestView(
         title=meta.call_title,
         subtitle=f"Call date {meta.call_date} · Source: {meta.source}",
-        banner=BANNER.format(sections=" and ".join(failed_sections)) if failed_sections else None,
+        banner=_banner(result, failed_sections),
         trust_line=TRUST_LINE.format(
             verified=len(verified),
             total=len(result.items),
@@ -112,6 +113,22 @@ def build_view(result: VerificationResult, meta: DigestMeta, generated_at: datet
         footer=_footer(meta, generated_at or datetime.now(timezone.utc)),
         limits=LIMITS_LINE,
     )
+
+
+def _banner(result: VerificationResult, failed_sections: list[str]) -> str | None:
+    """Says which sections, or parts of sections, could not be extracted. None if all worked."""
+    messages = []
+    if failed_sections:
+        messages.append(BANNER.format(sections=" and ".join(failed_sections)))
+    for section, status in result.section_status.items():
+        if status == "partial":
+            calls = ", ".join(result.failed_calls.get(section, []))
+            messages.append(PARTIAL_BANNER.format(section=_section_name(section), calls=calls))
+    return " ".join(messages) or None
+
+
+def _section_name(section: str) -> str:
+    return "prepared remarks" if section == "prepared" else "Q&A"
 
 
 def sources(item: VerifiedItem) -> str:
@@ -197,7 +214,7 @@ def _describe(item: VerifiedItem) -> str:
 
 def _footer(meta: DigestMeta, generated_at: datetime) -> str:
     parts = [
-        f"model {meta.model}",
+        f"answered by {meta.answered_by}",
         f"prompt {meta.prompt_version}",
         f"structured output {meta.structured_output_mode}",
     ]

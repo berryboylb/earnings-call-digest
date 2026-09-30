@@ -15,6 +15,7 @@ class FakeProvider:
     def __init__(self, fail=()):
         self.model, self.fallback_models, self.usage = "fake/model", [], Usage()
         self.last_model = self.last_mode = None
+        self.last_failures = []
         self.fail, self.calls = set(fail), []
 
     def complete(self, name, system, user, schema):
@@ -33,7 +34,9 @@ def test_failure_in_qa_marks_only_qa_failed():
     assert prepared.extraction is not None
     assert (qa.name, qa.status, qa.error) == ("qa", "failed", "upstream timed out")
     assert qa.extraction is None  # never an empty Extraction standing in for a failure
-    assert provider.calls == ["prepared", "qa"]
+    # one call per prepared-remarks speaker turn (the Operator's welcome is left out), then Q&A
+    assert [name.split(",")[0] for name in provider.calls] == [
+        "prepared S2", "prepared S3", "prepared S4", "prepared S5", "qa"]
 
 
 def test_empty_qa_input_is_not_sent():
@@ -44,4 +47,4 @@ def test_empty_qa_input_is_not_sent():
     run = run_extraction(parsed, provider)
     assert [(section.name, section.status) for section in run.sections] == [("prepared", "ok"), ("qa", "empty_input")]
     assert run.sections[1].extraction is None and run.sections[1].error is None
-    assert provider.calls == ["prepared"]
+    assert [name.split(",")[0] for name in provider.calls] == ["prepared S1", "prepared S2", "prepared S3"]

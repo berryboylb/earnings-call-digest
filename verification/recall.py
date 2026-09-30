@@ -7,20 +7,23 @@ from verification.matching import IndexedParagraph, TranscriptIndex
 
 
 def find_possibly_missed(
-    index: TranscriptIndex, items: list[VerifiedItem], section_status: dict[str, str]
+    index: TranscriptIndex,
+    items: list[VerifiedItem],
+    section_status: dict[str, str],
+    not_extracted: set[str] = frozenset(),
 ) -> list[MissedCandidate]:
     """Every amount in management's words (prepared remarks and Q&A, boilerplate excluded)
     that isn't inside any item's quotes and isn't equal to any extracted value.
 
-    Sections whose extraction failed are skipped: every number in them would look missed,
-    and the digest already says that section is not available.
+    Sections whose extraction failed, and segments whose call failed (not_extracted), are
+    skipped: every number in them would look missed, and the digest's banner already says so.
     """
     extracted_values = _extracted_values(items)
     missed = []
     for indexed in index.paragraphs:
         if indexed.segment.role != "management":
             continue
-        if section_status.get(indexed.segment.section) == "failed":
+        if section_status.get(indexed.segment.section) == "failed" or indexed.segment.id in not_extracted:
             continue
         text = indexed.paragraph.text
         for amount in parse_amounts(text):

@@ -9,6 +9,7 @@ from extraction.extractor import run_extraction
 from parsing.parser import parse_file
 from providers.base import LlmError
 from providers.nvidia import NvidiaProvider
+from rendering.meta import answered_by
 from schema.extraction import Extraction
 from tests.providers.fakes import VALID, FakeClient, api_error, response, settings
 
@@ -141,10 +142,27 @@ def test_fallback_answer_is_cached_under_its_own_key_and_replayed(tmp_path):
 
 def test_section_records_which_model_answered(tmp_path):
     parsed = parse_file(Path(__file__).parents[2] / "tests" / "fixtures" / "meridian.txt")
-    p, _ = provider(tmp_path, response(), timed_out(), response())  # prepared: primary; qa: fallback
+    # prepared: four speaker turns, all answered by the primary; qa: primary times out, fallback answers
+    p, _ = provider(tmp_path, response(), response(), response(), response(), timed_out(), response())
     run = run_extraction(parsed, p)
     assert [(section.name, section.status, section.model) for section in run.sections] == [
         ("prepared", "ok", "test/model"), ("qa", "ok", "fallback/model"),
     ]
     assert run.model == "test/model" and run.fallback_models == ["fallback/model"]
     assert run.structured_output_mode == "json_schema"
+
+
+def test_the_model_that_answered_is_recorded_with_the_earlier_failure(tmp_path):
+    parsed = parse_file(Path(__file__).parents[2] / "tests" / "fixtures" / "meridian.txt")
+    p, _ = provider(tmp_path, response(), response(), response(), response(), timed_out(), response())
+    run = run_extraction(parsed, p)
+
+    [qa_call] = run.sections[1].calls
+    assert (qa_call.status, qa_call.model) == ("ok", "fallback/model")
+    assert qa_call.earlier_failures == ["test/model: timed out after 600s"]
+    saved = run.model_dump(mode="json")  # what extraction.json holds
+    assert saved["sections"][1]["calls"][0]["model"] == "fallback/model"
+
+    footer = answered_by(run)
+    assert footer == ("prepared: test/model (4 calls); "
+                      "qa: fallback/model (1 call, fallback after test/model: timed out after 600s)")

@@ -23,15 +23,19 @@ class FixtureProvider:
         self.fallback_models: list[str] = []
         self.last_model: str | None = None
         self.last_mode: str | None = None
+        self.last_failures: list[str] = []
         self.usage = Usage()
 
     def complete(
         self, name: str, system: str, user: str, schema: type[BaseModel]
     ) -> tuple[BaseModel, bool]:
-        if name not in self.calls:
+        # Saved answers are per section ("prepared", "qa"). A call for part of a section
+        # ("prepared S4, 1,200 words") gets its section's answer; duplicates are merged later.
+        key = name if name in self.calls else name.split()[0]
+        if key not in self.calls:
             raise LlmError(f"Fixture has no output for '{name}'.")
         try:
-            result = schema.model_validate(self.calls[name])
+            result = schema.model_validate(self.calls[key])
         except ValidationError as error:
             raise LlmError(f"Fixture output for '{name}' failed validation: {error}") from error
         self.usage.replayed_calls += 1

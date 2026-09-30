@@ -3,6 +3,10 @@
 DIGEST_FILES = {"html": "digest.html", "pdf": "digest.pdf", "docx": "digest.docx"}
 
 BANNER = "INCOMPLETE: extraction failed for {sections}. Missing items may exist."
+PARTIAL_BANNER = (
+    "INCOMPLETE: extraction failed for part of the {section} ({calls}). "
+    "Items from the other parts are shown; missing items may exist."
+)
 TRUST_LINE = (
     "{verified} of {total} extracted items verified against the transcript · "
     "{needs_review} need review · {missed} numbers possibly missed"

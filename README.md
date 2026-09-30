@@ -10,8 +10,12 @@ checked facts reach the main digest. It runs in four stages:
 1. **Parse** turns the transcript into speaker segments. It labels each speaker's
    role and separates prepared remarks from Q&A. Ambiguous input produces warnings
    or a parse error.
-2. **Extract** sends those segments to an LLM, one call per section, and validates
-   the shape of its JSON answer. Every item carries a verbatim quote.
+2. **Extract** sends those segments to an LLM and validates the shape of its JSON
+   answer. Every item carries a verbatim quote. The prepared remarks are sent one
+   speaker turn per call (a turn over 2,500 words is split at paragraph boundaries,
+   with the paragraphs just before each part as read-only context); the Q&A is one
+   call. If some calls fail, the section is "partial": the rest is still shown, and
+   the digest's banner names what failed.
 3. **Verify** finds each quote in the transcript and checks the item: the quote comes
    from management, the numbers appear in the transcript's own words, prior-period
    figures and unsupported guidance directions are flagged, and duplicates are merged.
@@ -49,7 +53,9 @@ Each run starts clean: `out/` is emptied first, and the model is always asked fr
 several minutes on a long transcript; the limit is `LLM_TIMEOUT_SECONDS` (default 600).
 While it waits, the run prints which model it's asking and how long each answer took.
 A timeout moves on to the next fallback model; rate limits and server errors are retried
-twice first. Optional fallback models and endpoint settings are described in
+twice first. Each answer may use up to `LLM_MAX_TOKENS` (default 16,384; reasoning models
+count their hidden reasoning too). `extraction.json` records which model answered every
+call, and the digest's footer says so per section. Optional fallback models and endpoint settings are described in
 `.env.example`. Run tests with `uv run pytest -q`.
 
 ## Project layout
@@ -112,3 +118,20 @@ tests/               mirrors the folders above
 
 Each extraction section can be `ok`, `empty_input` or `failed`. A failed section is
 never shown as an empty result: the digest shows a banner and "Not available".
+
+
+## Real transcript used for testing
+
+Besides the synthetic test transcript (`data/meridian.txt`), the pipeline was run on Microsoft's
+Q4 FY2026 earnings call (July 29, 2026). The transcript is not committed, because it is Microsoft's
+content. To reproduce:
+
+1. Download it from Microsoft Investor Relations:
+   https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4
+   (Word version: https://aka.ms/transcriptfy26q4)
+2. Save the text as `data/microsoft.txt`.
+3. Run `uv run main.py`.
+
+The resulting digest is committed at `out/microsoft/digest.pdf`. This run found two real problems,
+both now fixed: analyst labels written as "NAME, Firm:" were merged into the operator's turn, and
+Q1 FY27 guidance was labelled FY27 (see NOTE.md).

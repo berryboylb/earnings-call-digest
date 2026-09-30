@@ -17,6 +17,7 @@ class Provider(Protocol):
     usage: Usage
     last_model: str | None      # which model produced the last result
     last_mode: str | None       # how structured output was requested for it
+    last_failures: list[str]    # errors from models tried before it: "model: error"
 
     def complete(
         self, name: str, system: str, user: str, schema: type[BaseModel]

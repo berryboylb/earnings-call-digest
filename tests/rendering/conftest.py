@@ -16,7 +16,7 @@ GENERATED_AT = datetime(2026, 9, 30, 12, 0, tzinfo=timezone.utc)
 
 META = DigestMeta(
     call_title="Meridian Cloud Systems plc · Q2 2026 Earnings Conference Call",
-    call_date="August 6, 2026", source="meridian.txt", model="test/model", prompt_version="v1",
+    call_date="August 6, 2026", source="meridian.txt", answered_by="prepared: test/model (2 calls); qa: test/model (1 call)", prompt_version="v1",
     structured_output_mode="json_schema", replayed=True, transcript_sha256="abc123def456",
 )
 

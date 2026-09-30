@@ -33,7 +33,7 @@ def verify_run(parsed: ParsedTranscript, run: ExtractionRun) -> VerificationResu
 
     items = []
     for section in run.sections:
-        if section.status != "ok":
+        if section.status not in ("ok", "partial"):
             continue  # its status is passed on, so later stages can say it's not available
         for kind, list_name in ITEM_LISTS:
             for extracted in getattr(section.extraction, list_name):
@@ -42,9 +42,14 @@ def verify_run(parsed: ParsedTranscript, run: ExtractionRun) -> VerificationResu
     items = merge_duplicates(items)
     assign_ids(items)
     section_status = {section.name: section.status for section in run.sections}
-    possibly_missed = find_possibly_missed(index, items, section_status)
+    not_extracted = set()  # segments whose extraction call failed
+    for section in run.sections:
+        not_extracted.update(section.failed_segments)
+    possibly_missed = find_possibly_missed(index, items, section_status, not_extracted)
 
-    return VerificationResult(items=items, possibly_missed=possibly_missed, section_status=section_status)
+    failed_calls = {section.name: section.failed_calls for section in run.sections if section.failed_calls}
+    return VerificationResult(items=items, possibly_missed=possibly_missed, section_status=section_status,
+                              failed_calls=failed_calls)
 
 
 def verify_item(kind: ItemKind, extracted: BaseModel, origin: str, index: TranscriptIndex) -> VerifiedItem:
