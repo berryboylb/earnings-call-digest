@@ -24,7 +24,12 @@ from verification.matching import TranscriptIndex
 from verification.recall import find_possibly_missed
 
 # Each kind of item, and the Extraction field it comes from.
-ITEM_LISTS = [("figure", "figures"), ("guidance", "guidance"), ("risk", "risks"), ("qa", "qa_topics")]
+ITEM_LISTS = [
+    ("figure", "figures"),
+    ("guidance", "guidance"),
+    ("risk", "risks"),
+    ("qa", "qa_topics"),
+]
 
 
 def verify_run(parsed: ParsedTranscript, run: ExtractionRun) -> VerificationResult:
@@ -47,15 +52,27 @@ def verify_run(parsed: ParsedTranscript, run: ExtractionRun) -> VerificationResu
         not_extracted.update(section.failed_segments)
     possibly_missed = find_possibly_missed(index, items, section_status, not_extracted)
 
-    failed_calls = {section.name: section.failed_calls for section in run.sections if section.failed_calls}
-    return VerificationResult(items=items, possibly_missed=possibly_missed, section_status=section_status,
-                              failed_calls=failed_calls)
+    failed_calls = {
+        section.name: section.failed_calls
+        for section in run.sections
+        if section.failed_calls
+    }
+    return VerificationResult(
+        items=items,
+        possibly_missed=possibly_missed,
+        section_status=section_status,
+        failed_calls=failed_calls,
+    )
 
 
-def verify_item(kind: ItemKind, extracted: BaseModel, origin: str, index: TranscriptIndex) -> VerifiedItem:
+def verify_item(
+    kind: ItemKind, extracted: BaseModel, origin: str, index: TranscriptIndex
+) -> VerifiedItem:
     """Run the checks for this kind of item. Any reason makes it unverified."""
     fields = extracted.model_dump()
-    item = VerifiedItem(kind=kind, fields=fields, speaker_claimed=fields["speaker"], origin=origin)
+    item = VerifiedItem(
+        kind=kind, fields=fields, speaker_claimed=fields["speaker"], origin=origin
+    )
 
     if check_quote_found(item, index):
         check_boilerplate(item)

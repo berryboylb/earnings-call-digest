@@ -44,7 +44,10 @@ def run_extraction(parsed: ParsedTranscript, provider: Provider) -> ExtractionRu
 
     modes_used = []
     for section in sections:
-        if section.structured_output_mode and section.structured_output_mode not in modes_used:
+        if (
+            section.structured_output_mode
+            and section.structured_output_mode not in modes_used
+        ):
             modes_used.append(section.structured_output_mode)
 
     return ExtractionRun(
@@ -72,6 +75,7 @@ def section_inputs(parsed: ParsedTranscript) -> dict[SectionName, list[Segment]]
 
 # --- Planning the calls ---------------------------------------------------------------------
 
+
 def _prepared_calls(segments: list[Segment]) -> list[Call]:
     """One call per speaker turn, or one per part of a long turn."""
     calls = []
@@ -81,16 +85,24 @@ def _prepared_calls(segments: list[Segment]) -> list[Call]:
             part = _with_paragraphs(segment, paragraphs)
             if not render_segments([part]):
                 continue  # nothing left once boilerplate is removed
-            label = segment.id if len(parts) == 1 else f"{segment.id} part {i + 1} of {len(parts)}"
+            label = (
+                segment.id
+                if len(parts) == 1
+                else f"{segment.id} part {i + 1} of {len(parts)}"
+            )
             context = []
             if i > 0:
-                context = [_with_paragraphs(segment, parts[i - 1][-CONTEXT_PARAGRAPHS:])]
-            calls.append(Call(
-                name=f"prepared {label}, {_word_count(paragraphs):,} words",
-                label=label,
-                segments=[part],
-                context=context,
-            ))
+                context = [
+                    _with_paragraphs(segment, parts[i - 1][-CONTEXT_PARAGRAPHS:])
+                ]
+            calls.append(
+                Call(
+                    name=f"prepared {label}, {_word_count(paragraphs):,} words",
+                    label=label,
+                    segments=[part],
+                    context=context,
+                )
+            )
     return calls
 
 
@@ -124,19 +136,30 @@ def _with_paragraphs(segment: Segment, paragraphs: list[Paragraph]) -> Segment:
 
 
 def _word_count(paragraphs: list[Paragraph]) -> int:
-    return len(segment_text(Segment("", "", "unknown", "prepared", list(paragraphs))).split())
+    return len(
+        segment_text(Segment("", "", "unknown", "prepared", list(paragraphs))).split()
+    )
 
 
 # --- Running the calls ---------------------------------------------------------------------
 
-def _run_calls(section: SectionName, calls: list[Call], provider: Provider) -> SectionResult:
+
+def _run_calls(
+    section: SectionName, calls: list[Call], provider: Provider
+) -> SectionResult:
     """Run a section's calls in order and merge their answers.
 
     "ok" if every call worked, "partial" if some failed (the others' items are kept),
     "failed" if all failed. A failure is never replaced by an empty result.
     """
     if not calls:
-        return SectionResult(name=section, status="empty_input", extraction=None, error=None, replayed=False)
+        return SectionResult(
+            name=section,
+            status="empty_input",
+            extraction=None,
+            error=None,
+            replayed=False,
+        )
 
     extractions = []
     failures = []  # "S4 part 2 of 3: timed out after 600s"
@@ -150,17 +173,27 @@ def _run_calls(section: SectionName, calls: list[Call], provider: Provider) -> S
     for call in calls:
         user_message = build_user_message(section, call.segments, call.context)
         try:
-            extraction, replayed = provider.complete(call.name, SYSTEM_PROMPT, user_message, Extraction)
+            extraction, replayed = provider.complete(
+                call.name, SYSTEM_PROMPT, user_message, Extraction
+            )
         except LlmError as error:
-            records.append(CallRecord(name=call.name, status="failed", error=str(error)))
+            records.append(
+                CallRecord(name=call.name, status="failed", error=str(error))
+            )
             failures.append(f"{call.label}: {error}" if call.label else str(error))
             failed_calls.append(call.label or section)
             for segment in call.segments:
                 if segment.id not in failed_segments:
                     failed_segments.append(segment.id)
             continue
-        records.append(CallRecord(name=call.name, status="ok", model=provider.last_model,
-                                  earlier_failures=list(provider.last_failures)))
+        records.append(
+            CallRecord(
+                name=call.name,
+                status="ok",
+                model=provider.last_model,
+                earlier_failures=list(provider.last_failures),
+            )
+        )
         extractions.append(extraction)
         all_replayed = all_replayed and replayed
         if provider.last_model not in models:
@@ -171,8 +204,16 @@ def _run_calls(section: SectionName, calls: list[Call], provider: Provider) -> S
     error = "; ".join(failures) or None
     if not extractions:
         # Never return an empty Extraction here: a failure must look like a failure.
-        return SectionResult(name=section, status="failed", extraction=None, error=error, replayed=False,
-                             failed_calls=failed_calls, failed_segments=failed_segments, calls=records)
+        return SectionResult(
+            name=section,
+            status="failed",
+            extraction=None,
+            error=error,
+            replayed=False,
+            failed_calls=failed_calls,
+            failed_segments=failed_segments,
+            calls=records,
+        )
 
     return SectionResult(
         name=section,
