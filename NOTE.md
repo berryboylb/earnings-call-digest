@@ -18,3 +18,4 @@ Link Q&A qualifiers back to the guidance they modify.
 Keep each model call small enough to finish reliably: split long turns further, and split the Q&A per exchange.
 Test on more real transcripts, label more answer keys, and score several runs per transcript.
 Fix the recall check, which treats any number inside an extracted quote as covered even when it wasn't extracted.
+Benchmark against more advanced models
